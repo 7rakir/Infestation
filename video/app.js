@@ -1,37 +1,47 @@
 var drawer;
 
-var currentSine;
+class Sine {
+  constructor(amplitude, frequencyMultiplier, offsetX) {
+    this.amplitude = amplitude;
+    this.frequencyMultiplier = frequencyMultiplier;
+    this.offsetX = offsetX;
+    this.periodMultiplier = 1000;
+    this.offsetXMultiplier = 0.1;
+  }
+
+  frequency() {
+    return this.frequencyMultiplier / this.periodMultiplier;
+  }
+
+  period() {
+    return this.periodMultiplier * 2 * Math.PI / this.frequencyMultiplier;
+  }
+
+  offset() {
+    return this.offsetX * this.period() * this.offsetXMultiplier;
+  }
+
+  y(x) {
+    return this.amplitude * Math.sin((x - this.offset()) * (this.frequencyMultiplier / this.periodMultiplier));
+  }
+}
+
+var currentSine = new Sine(50, 90, 0);
+var checkSine = new Sine(50, 90, 0);
 
 const entities = [];
 
 window.onload = function (event) {
   drawer = new CanvasDrawer("terminal");
 
-  var currentFrequency = 20;
-  var currentAmplitude = 50;
-  var currentOffset = 1;
+  registerInput("frequency", currentSine.frequencyMultiplier, frequencyChanged);
+  registerInput("amplitude", currentSine.amplitude, amplitudeChanged);
+  registerInput("offset", currentSine.offset, offsetChanged);
 
-  registerInput("frequency", currentFrequency, frequencyChanged);
-  registerInput("amplitude", currentAmplitude, amplitudeChanged);
-  registerInput("offset", currentOffset, offsetChanged);
-
-  currentSine = new Sine(currentAmplitude, currentFrequency, currentOffset);
   entities.push(new SineEntity(currentSine));
 
   window.requestAnimationFrame(draw);
 };
-
-class Sine {
-  constructor(amplitude, frequency, offsetX) {
-    this.amplitude = amplitude;
-    this.frequency = frequency;
-    this.offsetX = offsetX;
-  }
-
-  y(x) {
-    return this.amplitude * Math.sin(x / this.frequency - this.offsetX);
-  }
-}
 
 class CanvasDrawer {
   constructor(canvasId) {
@@ -41,16 +51,16 @@ class CanvasDrawer {
   }
 
   drawSineTail(sine, headX) {
-    var period = sine.frequency * 2 * Math.PI;
+    var period = sine.period();
 
-    var x = 0 - 3 * period / 4 + (sine.offsetX * sine.frequency);
+    var x = sine.offset() - 7 * period / 4;
     var y = this.yOffset;
 
-    this.context.strokeStyle = this.getBezierGradient(headX);
+    this.context.strokeStyle = this.getBezierGradient(headX, sine.offsetX);
 
     while (x < this.canvas.width) {
-      this.drawBezier(x, y - sine.amplitude, x + period / 2, y + sine.amplitude, headX);
-      this.drawBezier(x + period / 2, y + sine.amplitude, x + period, y - sine.amplitude, headX);
+      this.drawBezier(x, y - sine.amplitude, x + period / 2, y + sine.amplitude);
+      this.drawBezier(x + period / 2, y + sine.amplitude, x + period, y - sine.amplitude);
       x += period;
     }
   }
@@ -68,24 +78,25 @@ class CanvasDrawer {
     this.context.stroke();
   }
 
-  getBezierGradient(headX) {
+  getBezierGradient(headX, offsetX) {
     const tailRatio = 0.3;
+    const transparent = "rgba(0, 0, 0, 0)";
     const progress = headX / this.canvas.width;
     var gradient = this.context.createLinearGradient(0, 0, this.canvas.width, 0);
 
     const lowest = Math.max(0, progress - tailRatio);
-    gradient.addColorStop(lowest, "white");
+    gradient.addColorStop(lowest, transparent);
 
     gradient.addColorStop(progress, "black");
-    gradient.addColorStop(progress, "white");
+    gradient.addColorStop(progress, transparent);
 
 
     if (progress < tailRatio) {
-      gradient.addColorStop(1 - (tailRatio - progress), "white");
+      gradient.addColorStop(1 - (tailRatio - progress), transparent);
       gradient.addColorStop(1, "rgba(0, 0, 0, " + (tailRatio - progress) / tailRatio + ")");
     }
 
-    gradient.addColorStop(1, "white");
+    gradient.addColorStop(1, transparent);
 
     return gradient;
   }
@@ -136,7 +147,7 @@ class SineEntity {
 function draw() {
   drawer.clear();
 
-  drawer.drawSine(new Sine(50, 20, 1));
+  drawer.drawSine(checkSine);
 
   entities.forEach(entity => {
     entity.draw();
@@ -154,7 +165,7 @@ function registerInput(inputId, currentValue, onChange) {
 }
 
 function frequencyChanged(event) {
-  currentSine.frequency = parseInt(event.target.value);
+  currentSine.frequencyMultiplier = parseInt(event.target.value);
 }
 
 function amplitudeChanged(event) {
