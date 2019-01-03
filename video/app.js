@@ -39,8 +39,12 @@ class Color {
   }
 }
 
-var currentSine = new Sine(20, 40, 10);
-var checkSine = new Sine(50, 90, 0);
+var currentSine = new Sine(50, 100, 0);
+
+const randomAmplitude = random(25, 100, 5);
+const randomFrequency = random(50, 200, 10);
+const randomOffset = random(-10, 10, 1);
+var checkSine = new Sine(randomAmplitude, randomFrequency, randomOffset);
 
 const entities = [];
 
@@ -204,6 +208,10 @@ class GridEntity {
   }
 
   tick() { }
+}
+
+function random(min, max, step) {
+  return min + (step * Math.floor(Math.random() * (max - min + 1) / step));
 }
 
 function draw() {
