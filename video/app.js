@@ -172,10 +172,10 @@ function draw() {
 }
 
 function registerInput(inputId, currentValue, onChange) {
-    var input = document.getElementById(inputId);
-    input.value = currentValue;
-    input.onchange = onChange;
-    return input;
+  var input = document.getElementById(inputId);
+  input.value = currentValue;
+  input.onchange = onChange;
+  return input;
 }
 
 function frequencyChanged(event) {
@@ -200,7 +200,7 @@ function checkSynchronization(currentSine, checkSine) {
   const offsetDifference = currentSine.offsetX - checkSine.offsetX;
   const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
 
-  if(frequenciesEqual && amplitudesEqual && offsetInSync) {
+  if (frequenciesEqual && amplitudesEqual && offsetInSync) {
     alert("Winner is you!");
   }
 }
