@@ -26,7 +26,20 @@ class Sine {
   }
 }
 
-var currentSine = new Sine(50, 90, 0);
+class Color {
+  constructor(red, green, blue, alpha = 1) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+  }
+
+  full() {
+    return "rgba(" + this.red + ", " + this.green + ", " + this.blue + ", " + this.alpha + ")";
+  }
+}
+
+var currentSine = new Sine(20, 40, 10);
 var checkSine = new Sine(50, 90, 0);
 
 const entities = [];
@@ -38,7 +51,8 @@ window.onload = function (event) {
   registerInput("amplitude", currentSine.amplitude, amplitudeChanged);
   registerInput("offset", currentSine.offset, offsetChanged);
 
-  entities.push(new SineEntity(currentSine));
+  entities.push(new SineEntity(currentSine, new Color(255, 0, 0)));
+  entities.push(new SineEntity(checkSine, new Color(0, 255, 0, 0.3)));
 
   window.requestAnimationFrame(draw);
 };
@@ -50,13 +64,13 @@ class CanvasDrawer {
     this.yOffset = this.canvas.height / 2;
   }
 
-  drawSineTail(sine, headX) {
+  drawSineTail(sine, headX, color) {
     var period = sine.period();
 
     var x = sine.offset() - 7 * period / 4;
     var y = this.yOffset;
 
-    this.context.strokeStyle = this.getBezierGradient(headX, sine.offsetX);
+    this.context.strokeStyle = this.getBezierGradient(headX, color);
 
     while (x < this.canvas.width) {
       this.drawBezier(x, y - sine.amplitude, x + period / 2, y + sine.amplitude);
@@ -78,8 +92,8 @@ class CanvasDrawer {
     this.context.stroke();
   }
 
-  getBezierGradient(headX, offsetX) {
-    const tailRatio = 0.3;
+  getBezierGradient(headX, color) {
+    const tailRatio = 0.5;
     const transparent = "rgba(0, 0, 0, 0)";
     const progress = headX / this.canvas.width;
     var gradient = this.context.createLinearGradient(0, 0, this.canvas.width, 0);
@@ -87,13 +101,13 @@ class CanvasDrawer {
     const lowest = Math.max(0, progress - tailRatio);
     gradient.addColorStop(lowest, transparent);
 
-    gradient.addColorStop(progress, "black");
+    gradient.addColorStop(progress, color.full());
     gradient.addColorStop(progress, transparent);
-
 
     if (progress < tailRatio) {
       gradient.addColorStop(1 - (tailRatio - progress), transparent);
-      gradient.addColorStop(1, "rgba(0, 0, 0, " + (tailRatio - progress) / tailRatio + ")");
+      const transparency = (tailRatio - progress) / tailRatio * color.alpha;
+      gradient.addColorStop(1, new Color(color.red, color.green, color.blue, transparency).full());
     }
 
     gradient.addColorStop(1, transparent);
@@ -113,11 +127,12 @@ class CanvasDrawer {
     this.context.stroke();
   }
 
-  drawSineHead(sine, x) {
+  drawSineHead(sine, x, color) {
     this.context.beginPath();
-    this.context.strokeStyle = "#000000";
-    this.context.arc(x, this.yOffset - sine.y(x), 5, 0, 2 * Math.PI);
-    this.context.fillStyle = '#FF0000';
+    this.context.strokeStyle = color.full();
+    this.context.arc(x, this.yOffset - sine.y(x), 1, 0, 2 * Math.PI);
+    this.context.fillStyle = color.full();
+    this.context.lineWidth = 3;
     this.context.fill();
     this.context.stroke();
   }
@@ -128,15 +143,16 @@ class CanvasDrawer {
 }
 
 class SineEntity {
-  constructor(sine) {
+  constructor(sine, color) {
     this.sine = sine;
     this.headX = 0;
-    this.incrementX = 1;
+    this.incrementX = 5;
+    this.color = color;
   }
 
   draw() {
-    drawer.drawSineTail(this.sine, this.headX);
-    drawer.drawSineHead(this.sine, this.headX);
+    drawer.drawSineTail(this.sine, this.headX, this.color);
+    drawer.drawSineHead(this.sine, this.headX, this.color);
   }
 
   tick() {
@@ -146,8 +162,6 @@ class SineEntity {
 
 function draw() {
   drawer.clear();
-
-  drawer.drawSine(checkSine);
 
   entities.forEach(entity => {
     entity.draw();
