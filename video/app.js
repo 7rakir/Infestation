@@ -166,12 +166,27 @@ function registerInput(inputId, currentValue, onChange) {
 
 function frequencyChanged(event) {
   currentSine.frequencyMultiplier = parseInt(event.target.value);
+  checkSynchronization(currentSine, checkSine);
 }
 
 function amplitudeChanged(event) {
   currentSine.amplitude = parseInt(event.target.value);
+  checkSynchronization(currentSine, checkSine);
 }
 
 function offsetChanged(event) {
   currentSine.offsetX = parseInt(event.target.value);
+  checkSynchronization(currentSine, checkSine);
+}
+
+function checkSynchronization(currentSine, checkSine) {
+  const frequenciesEqual = currentSine.frequencyMultiplier == checkSine.frequencyMultiplier;
+  const amplitudesEqual = currentSine.amplitude == checkSine.amplitude;
+
+  const offsetDifference = currentSine.offsetX - checkSine.offsetX;
+  const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
+
+  if(frequenciesEqual && amplitudesEqual && offsetInSync) {
+    alert("Winner is you!");
+  }
 }
