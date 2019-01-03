@@ -51,6 +51,8 @@ window.onload = function (event) {
   registerInput("amplitude", currentSine.amplitude, amplitudeChanged);
   registerInput("offset", currentSine.offset, offsetChanged);
 
+  entities.push(new GridEntity(checkSine));
+
   entities.push(new SineEntity(currentSine, new Color(255, 0, 0)));
   entities.push(new SineEntity(checkSine, new Color(0, 255, 0, 0.3)));
 
@@ -70,6 +72,7 @@ class CanvasDrawer {
     var x = sine.offset() - 7 * period / 4;
     var y = this.yOffset;
 
+    this.context.lineWidth = 3;
     this.context.strokeStyle = this.getBezierGradient(headX, color);
 
     while (x < this.canvas.width) {
@@ -132,13 +135,41 @@ class CanvasDrawer {
     this.context.strokeStyle = color.full();
     this.context.arc(x, this.yOffset - sine.y(x), 1, 0, 2 * Math.PI);
     this.context.fillStyle = color.full();
-    this.context.lineWidth = 3;
     this.context.fill();
     this.context.stroke();
   }
 
+  drawHorizontalGrid(step) {
+    this.context.lineWidth = 1;
+
+    var y = step;
+    while (y < this.canvas.height) {
+      this.drawLine(0, y, this.canvas.width, y, "rgba(50, 50, 50, 0.5)");
+      y += step;
+    }
+    this.context.stroke();
+  }
+
+  drawVerticalGrid(step) {
+    this.context.lineWidth = 1;
+
+    var x = step;
+    while (x < this.canvas.width) {
+      this.drawLine(x, 0, x, this.canvas.height, "rgba(50, 50, 50, 0.5)");
+      x += step;
+    }
+    this.context.stroke();
+  }
+
+  drawLine(x1, y1, x2, y2, color) {
+    this.context.strokeStyle = color;
+    this.context.moveTo(x1, y1);
+    this.context.lineTo(x2, y2);
+  }
+
   clear() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.fillStyle = "black";
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }
 
@@ -146,7 +177,7 @@ class SineEntity {
   constructor(sine, color) {
     this.sine = sine;
     this.headX = 0;
-    this.incrementX = 5;
+    this.incrementX = 2;
     this.color = color;
   }
 
@@ -158,6 +189,21 @@ class SineEntity {
   tick() {
     this.headX = (this.headX + this.incrementX) % drawer.canvas.width;
   }
+}
+
+class GridEntity {
+  constructor(checkSine) {
+    this.checkSine = checkSine;
+  }
+
+  draw() {
+    drawer.drawHorizontalGrid(50);
+
+    const stepSize = 500 / this.checkSine.frequencyMultiplier * 4 * Math.PI;
+    drawer.drawVerticalGrid(stepSize);
+  }
+
+  tick() { }
 }
 
 function draw() {
