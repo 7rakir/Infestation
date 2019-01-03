@@ -1,7 +1,4 @@
 var drawer;
-var frequencyInput;
-var amplitudeInput;
-var offsetInput;
 
 var currentSine;
 
@@ -14,17 +11,9 @@ window.onload = function (event) {
   var currentAmplitude = 50;
   var currentOffset = 1;
 
-  frequencyInput = document.getElementById("frequency");
-  amplitudeInput = document.getElementById("amplitude");
-  offsetInput = document.getElementById("offset");
-
-  frequencyInput.value = currentFrequency;
-  amplitudeInput.value = currentAmplitude;
-  offsetInput.value = currentOffset;
-
-  frequencyInput.onchange = frequencyChanged;
-  amplitudeInput.onchange = amplitudeChanged;
-  offsetInput.onchange = offsetChanged;
+  registerInput("frequency", currentFrequency, frequencyChanged);
+  registerInput("amplitude", currentAmplitude, amplitudeChanged);
+  registerInput("offset", currentOffset, offsetChanged);
 
   currentSine = new Sine(currentAmplitude, currentFrequency, currentOffset);
   entities.push(new SineEntity(currentSine));
@@ -155,6 +144,13 @@ function draw() {
   });
 
   window.requestAnimationFrame(draw);
+}
+
+function registerInput(inputId, currentValue, onChange) {
+    var input = document.getElementById(inputId);
+    input.value = currentValue;
+    input.onchange = onChange;
+    return input;
 }
 
 function frequencyChanged(event) {
