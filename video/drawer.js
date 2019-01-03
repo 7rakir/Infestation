@@ -111,3 +111,16 @@ class CanvasDrawer {
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }
+
+class Color {
+  constructor(red, green, blue, alpha = 1) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+  }
+
+  full() {
+    return "rgba(" + this.red + ", " + this.green + ", " + this.blue + ", " + this.alpha + ")";
+  }
+}
