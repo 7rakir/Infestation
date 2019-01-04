@@ -1,3 +1,7 @@
+// Some numbers:
+// 12 semitones = 1 octave
+// 100 cents = 1 semitone
+
 const run = () => {
 
     function envelope(param, time, volume, attack, hold, release) {
@@ -50,7 +54,6 @@ const run = () => {
         gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
         oscNoise.connect(filter);
         filter.connect(gainNode);
-        gainNode.connect(audioContext.destination);
 
         return {
             play: (params) => {
@@ -59,6 +62,9 @@ const run = () => {
                 const hold = 0.01;
                 const release = 0.3;
                 envelope(gainNode.gain, params.time, volume, attack, hold, release);
+            },
+            connect: (destination) => {
+                gainNode.connect(destination);
             }
         }
     }
@@ -74,7 +80,6 @@ const run = () => {
         gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
         oscNoise.connect(filter);
         filter.connect(gainNode);
-        gainNode.connect(audioContext.destination);
 
         return {
             play: (params) => {
@@ -84,6 +89,9 @@ const run = () => {
                 const release = 0.6;
                 envelope(gainNode.gain, params.time, volume, attack, hold, release);
                 envelope(filter.frequency, params.time, 20000, 0.0001, 0.1, 0.8);
+            },
+            connect: (destination) => {
+                gainNode.connect(destination);
             }
         }
     }
@@ -102,7 +110,6 @@ const run = () => {
         osc.connect(filter);
         noise.connect(filter)
         filter.connect(gainNode);
-        gainNode.connect(audioContext.destination);
 
         return {
             play: (params) => {
@@ -111,6 +118,9 @@ const run = () => {
                 const hold = 0.01;
                 const release = 0.1;
                 envelope(gainNode.gain, params.time, volume, attack, hold, release);
+            },
+            connect: (destination) => {
+                gainNode.connect(destination);
             }
         }
     }
@@ -133,7 +143,6 @@ const run = () => {
         osc2.connect(filter);
         osc3.connect(filter);
         filter.connect(gainNode);
-        gainNode.connect(audioContext.destination);
 
         return {
             play: (params) => {
@@ -152,11 +161,14 @@ const run = () => {
             },
             setFrequency: (freq) => {
                 filter.frequency.linearRampToValueAtTime(freq, audioContext.currentTime + 0.1);
+            },
+            connect: (destination) => {
+                gainNode.connect(destination);
             }
         }
     }
 
-    function scheduler(audioContext, loop, inst) {
+    function scheduler(audioContext, loop, instrument) {
         const lookahead = 25.0;         // milliseconds
         const scheduleAheadTime = 0.1;  // seconds
         let currentLoop = 0;
@@ -170,7 +182,7 @@ const run = () => {
                 currentLoop++;
             }
             const params = loop.seq[currentNote];
-            inst.play({...params, time: (loop.duration * currentLoop) + params.time});
+            instrument.play({...params, time: (loop.duration * currentLoop) + params.time});
         }
 
         function getNextNoteTime(){
@@ -188,17 +200,54 @@ const run = () => {
                 scheduleNextNote();
             }
         }
-        timerId = setInterval(schedule, lookahead);
 
         return {
-            instrument: inst,
+            instrument: instrument,
             stop: () => {
                 clearInterval(timerId);
+            },
+            start: () => {
+                timerId = setInterval(schedule, lookahead);
             }
         }
     }
 
+    function impulseResponse(audioContext, duration, decay, reverse) {
+        var sampleRate = audioContext.sampleRate;
+        var length = sampleRate * duration;
+        var impulse = audioContext.createBuffer(2, length, sampleRate);
+        var impulseL = impulse.getChannelData(0);
+        var impulseR = impulse.getChannelData(1);
+
+        if (!decay)
+            decay = 2.0;
+        for (var i = 0; i < length; i++){
+          var n = reverse ? length - i : i;
+          impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+          impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+        }
+        return impulse;
+    }
+
+
     const audioContext = new AudioContext();
+
+    const masterGain = audioContext.createGain();
+    masterGain.gain.setValueAtTime(0.7, audioContext.currentTime);
+    masterGain.connect(audioContext.destination);
+
+    var convolver = audioContext.createConvolver();
+    convolver.buffer = impulseResponse(audioContext, 0.7, 2);
+    convolver.normalize = false;
+    const convolverGain = audioContext.createGain();
+    convolverGain.gain.setValueAtTime(0.5, audioContext.currentTime);
+    convolver.connect(convolverGain);
+    convolverGain.connect(masterGain);
+
+    const preGain = audioContext.createGain();
+    preGain.gain.setValueAtTime(1, audioContext.currentTime);
+    preGain.connect(convolver);
+    preGain.connect(masterGain);
 
     const synth = scheduler(audioContext, {
         duration: 4,
@@ -210,6 +259,8 @@ const run = () => {
             {freq: 164.8138, time: 3, hold: 0.15},
         ]
     }, createSynthInstrument(audioContext));
+    synth.start();
+    synth.instrument.connect(preGain);
 
     const hihat = scheduler(audioContext, {
         duration: 1,
@@ -218,6 +269,8 @@ const run = () => {
             {time: 0.75},
         ]
     }, createHiHatInstrument(audioContext));
+    hihat.start();
+    hihat.instrument.connect(preGain);
 
     const kick = scheduler(audioContext, {
         duration: 1,
@@ -226,6 +279,8 @@ const run = () => {
             {time: 0.5},
         ]
     }, createKickInstrument(audioContext));
+    kick.start();
+    kick.instrument.connect(preGain);
 
     const snare = scheduler(audioContext, {
         duration: 1,
@@ -233,15 +288,58 @@ const run = () => {
             {time: 0.5},
         ]
     }, createSnareInstrument(audioContext));
+    snare.start();
+    snare.instrument.connect(preGain);
 
     document.getElementById("stop").onclick = () => {
         kick.stop();
         hihat.stop();
         snare.stop();
         synth.stop();
+        audioContext.close();
     }
 
-    document.getElementById("frequency").onchange = (e) => {
+    document.getElementById("frequency").addEventListener("change", (e) => {
         synth.instrument.setFrequency(e.srcElement.value);
-    }
+    });
+
+    document.getElementById("volume").addEventListener("change", (e) => {
+        masterGain.gain.linearRampToValueAtTime(e.srcElement.value / 1000, audioContext.currentTime + 0.01);
+    });
+
+    document.getElementById("reverb").addEventListener("change", (e) => {
+        convolverGain.gain.linearRampToValueAtTime(e.srcElement.value / 1000, audioContext.currentTime + 0.01);
+    });
+
+    document.getElementById("play-kick").addEventListener("change", (e) => {
+        if (e.srcElement.checked) {
+            kick.start();
+        } else {
+            kick.stop();
+        }
+    });
+
+    document.getElementById("play-snare").addEventListener("change", (e) => {
+        if (e.srcElement.checked) {
+            snare.start();
+        } else {
+            snare.stop();
+        }
+    });
+
+    document.getElementById("play-hihat").addEventListener("change", (e) => {
+        if (e.srcElement.checked) {
+            hihat.start();
+        } else {
+            hihat.stop();
+        }
+    });
+
+    document.getElementById("play-synth").addEventListener("change", (e) => {
+        if (e.srcElement.checked) {
+            synth.start();
+        } else {
+            synth.stop();
+        }
+    });
 }
