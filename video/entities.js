@@ -2,7 +2,7 @@ class SineEntity {
   constructor(sine, color) {
     this.sine = sine;
     this.headX = 0;
-    this.incrementX = 2;
+    this.incrementX = 0.3;
     this.color = color;
   }
 
@@ -11,8 +11,8 @@ class SineEntity {
     drawer.drawSineHead(this.sine, this.headX, this.color);
   }
 
-  tick() {
-    this.headX = (this.headX + this.incrementX) % drawer.canvas.width;
+  update(timeSinceLastFrame) {
+    this.headX = (this.headX + this.incrementX * timeSinceLastFrame) % drawer.canvas.width;
   }
 }
 
@@ -28,5 +28,5 @@ class GridEntity {
     drawer.drawVerticalGrid(stepSize);
   }
 
-  tick() { }
+  update() { }
 }
