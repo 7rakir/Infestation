@@ -26,10 +26,10 @@ class Sine {
 
 var drawer;
 
-var currentSine = new Sine(50, 100, 0);
+var currentSine = new Sine(110, 110, 0);
 
-const randomAmplitude = random(25, 100, 5);
-const randomFrequency = random(50, 200, 10);
+const randomAmplitude = random(30, 190, 10);
+const randomFrequency = random(30, 190, 10);
 const randomOffset = random(-10, 10, 1);
 var checkSine = new Sine(randomAmplitude, randomFrequency, randomOffset);
 
