@@ -21,9 +21,9 @@ const run = () => {
     }
 
     function createWhiteNoise(audioContext) {
-        const bufferSize = 2 * audioContext.sampleRate,
-        noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate),
-        output = noiseBuffer.getChannelData(0);
+        const bufferSize = 2 * audioContext.sampleRate;
+        const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
             output[i] = Math.random() * 2 - 1;
         }
@@ -133,11 +133,38 @@ const run = () => {
     }
 
     function createSynthInstrument(audioContext) {
-        const osc1 = createSaw(audioContext);
-        const osc2 = createSaw(audioContext);
-        osc2.detune.setValueAtTime(1200, audioContext.currentTime);
-        const osc3 = createSaw(audioContext);
-        osc3.detune.setValueAtTime(1900, audioContext.currentTime);
+
+        function createVoice(audioContext) {
+            const osc1 = createSaw(audioContext);
+            const osc2 = createSaw(audioContext);
+            const osc3 = createSaw(audioContext);
+
+            osc2.detune.setValueAtTime(1200, audioContext.currentTime);
+            osc3.detune.setValueAtTime(1900, audioContext.currentTime);
+
+            osc1.frequency.value = 1;
+            osc2.frequency.value = 1;
+            osc3.frequency.value = 1;
+
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            osc3.connect(gainNode);
+
+            const oscFreqControl = audioContext.createConstantSource();
+            oscFreqControl.start(audioContext.currentTime);
+            oscFreqControl.connect(osc1.frequency);
+            oscFreqControl.connect(osc2.frequency);
+            oscFreqControl.connect(osc3.frequency);
+
+            return {
+                oscFreq: oscFreqControl.offset,
+                gain: gainNode.gain,
+                connect: (destination) => { gainNode.connect(destination); },
+            }
+        }
 
         var filter = audioContext.createBiquadFilter();
         filter.type = "lowpass";
@@ -145,26 +172,32 @@ const run = () => {
         filter.Q.value = 15;
 
         const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-        osc1.connect(filter);
-        osc2.connect(filter);
-        osc3.connect(filter);
+        //gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
         filter.connect(gainNode);
+
+        const voices = [];
+        for (let i = 0; i < 5; i++) {
+            const voice = createVoice(audioContext);
+            voice.connect(filter);
+            voices.push(voice);
+        }
+
+        let currentVoice = -1;
 
         return {
             play: (params) => {
-                const volume = 0.23;
-                const attack = 0.05;
-                const release = 0.3;
+                const volume = 0.1;
+                const attack = 0.01;
+                const release = 1;
 
-                osc1.frequency.cancelScheduledValues(params.time);
-                osc1.frequency.setValueAtTime(params.freq, params.time);
-                osc2.frequency.cancelScheduledValues(params.time);
-                osc2.frequency.setValueAtTime(params.freq, params.time);
-                osc3.frequency.cancelScheduledValues(params.time);
-                osc3.frequency.setValueAtTime(params.freq, params.time);
+                currentVoice++;
+                if (currentVoice >= voices.length) {
+                    currentVoice = 0;
+                }
 
-                envelope(gainNode.gain, params.time, volume, attack, params.hold, release);
+                voices[currentVoice].oscFreq.cancelScheduledValues(params.time);
+                voices[currentVoice].oscFreq.setValueAtTime(params.freq, params.time);
+                envelope(voices[currentVoice].gain, params.time, volume, attack, params.hold, release);
             },
             setFrequency: (freq) => {
                 filter.frequency.linearRampToValueAtTime(freq, audioContext.currentTime + 0.1);
@@ -180,7 +213,7 @@ const run = () => {
         const scheduleAheadTime = 0.1;  // seconds
         let timerId = null;
 
-        function wrapLoop(loop){
+        function loopScheduler(loop){
             let currentLoop = 0;
             let currentNote = -1;
 
@@ -215,7 +248,7 @@ const run = () => {
             }
         }
 
-        const wrapped = loops.map(loop => wrapLoop(loop));
+        const loopSchedulers = loops.map(loop => loopScheduler(loop));
 
         return {
             stop: () => {
@@ -223,7 +256,7 @@ const run = () => {
             },
             start: () => {
                 timerId = setInterval(() => {
-                    wrapped.forEach(w => w.schedule());
+                    loopSchedulers.forEach(w => w.schedule());
                 }, lookahead);
             }
         }
@@ -270,11 +303,11 @@ const run = () => {
     const synth = {
         duration: 4,
         seq: [
-            {freq: conv(48), time: 0, hold: 0.4},
-            {freq: conv(52), time: 1, hold: 0.4},
-            {freq: conv(55), time: 2, hold: 0.15},
-            {freq: conv(48), time: 2.5, hold: 0.15},
-            {freq: conv(52), time: 3, hold: 0.15},
+            {freq: conv(48), time: 0, hold: 1},
+            {freq: conv(52), time: 1, hold: 1},
+            {freq: conv(55), time: 2, hold: 1},
+            {freq: conv(48), time: 2.5, hold: 0.5},
+            {freq: conv(52), time: 3, hold: 0.5},
         ],
         instrument: createSynthInstrument(audioContext),
     };
