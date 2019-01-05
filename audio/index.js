@@ -175,46 +175,56 @@ const run = () => {
         }
     }
 
-    function scheduler(audioContext, loop, instrument) {
+    function scheduler(audioContext, loops) {
         const lookahead = 25.0;         // milliseconds
         const scheduleAheadTime = 0.1;  // seconds
-        let currentLoop = 0;
-        let currentNote = -1;
         let timerId = null;
 
-        function scheduleNextNote(){
-            currentNote++;
-            if (currentNote >= loop.seq.length){
-                currentNote = 0;
-                currentLoop++;
+        function wrapLoop(loop){
+            let currentLoop = 0;
+            let currentNote = -1;
+
+            function scheduleNextNote(){
+                currentNote++;
+                if (currentNote >= loop.seq.length){
+                    currentNote = 0;
+                    currentLoop++;
+                }
+                if (!loop.mute) {
+                    const params = loop.seq[currentNote];
+                    loop.instrument.play({...params, time: (loop.duration * currentLoop) + params.time});
+                }
             }
-            const params = loop.seq[currentNote];
-            instrument.play({...params, time: (loop.duration * currentLoop) + params.time});
+
+            function getNextNoteTime(){
+                let next = currentNote + 1;
+                let l = currentLoop;
+                if (next >= loop.seq.length){
+                    next = 0;
+                    l++;
+                }
+                return (loop.duration * l) + loop.seq[next].time;
+            }
+
+            return {
+                schedule: () => {
+                    while (getNextNoteTime() < audioContext.currentTime + scheduleAheadTime ) {
+                        scheduleNextNote();
+                    }
+                },
+            }
         }
 
-        function getNextNoteTime(){
-            let next = currentNote + 1;
-            let l = currentLoop;
-            if (next >= loop.seq.length){
-                next = 0;
-                l++;
-            }
-            return (loop.duration * l) + loop.seq[next].time;
-        }
-
-        function schedule() {
-            while (getNextNoteTime() < audioContext.currentTime + scheduleAheadTime ) {
-                scheduleNextNote();
-            }
-        }
+        const wrapped = loops.map(loop => wrapLoop(loop));
 
         return {
-            instrument: instrument,
             stop: () => {
                 clearInterval(timerId);
             },
             start: () => {
-                timerId = setInterval(schedule, lookahead);
+                timerId = setInterval(() => {
+                    wrapped.forEach(w => w.schedule());
+                }, lookahead);
             }
         }
     }
@@ -257,7 +267,7 @@ const run = () => {
     preGain.connect(masterGain);
 
     const conv = createMidiToFreqConverter();
-    const synth = scheduler(audioContext, {
+    const synth = {
         duration: 4,
         seq: [
             {freq: conv(48), time: 0, hold: 0.4},
@@ -265,45 +275,45 @@ const run = () => {
             {freq: conv(55), time: 2, hold: 0.15},
             {freq: conv(48), time: 2.5, hold: 0.15},
             {freq: conv(52), time: 3, hold: 0.15},
-        ]
-    }, createSynthInstrument(audioContext));
-    synth.start();
+        ],
+        instrument: createSynthInstrument(audioContext),
+    };
     synth.instrument.connect(preGain);
 
-    const hihat = scheduler(audioContext, {
+    const hihat = {
         duration: 1,
         seq: [
             {time: 0.25},
             {time: 0.75},
-        ]
-    }, createHiHatInstrument(audioContext));
-    hihat.start();
+        ],
+        instrument: createHiHatInstrument(audioContext),
+    };
     hihat.instrument.connect(preGain);
 
-    const kick = scheduler(audioContext, {
+    const kick = {
         duration: 1,
         seq: [
             {time: 0},
             {time: 0.5},
-        ]
-    }, createKickInstrument(audioContext));
-    kick.start();
+        ],
+        instrument:  createKickInstrument(audioContext),
+    };
     kick.instrument.connect(preGain);
 
-    const snare = scheduler(audioContext, {
+    const snare = {
         duration: 1,
         seq: [
             {time: 0.5},
-        ]
-    }, createSnareInstrument(audioContext));
-    snare.start();
+        ],
+        instrument: createSnareInstrument(audioContext),
+    };
     snare.instrument.connect(preGain);
 
+    const s = scheduler(audioContext, [kick, hihat, snare, synth]);
+    s.start();
+
     document.getElementById("stop").onclick = () => {
-        kick.stop();
-        hihat.stop();
-        snare.stop();
-        synth.stop();
+        s.stop();
         audioContext.close();
     }
 
@@ -320,34 +330,18 @@ const run = () => {
     });
 
     document.getElementById("play-kick").addEventListener("change", (e) => {
-        if (e.srcElement.checked) {
-            kick.start();
-        } else {
-            kick.stop();
-        }
+        kick.mute = !e.srcElement.checked;
     });
 
     document.getElementById("play-snare").addEventListener("change", (e) => {
-        if (e.srcElement.checked) {
-            snare.start();
-        } else {
-            snare.stop();
-        }
+        snare.mute = !e.srcElement.checked;
     });
 
     document.getElementById("play-hihat").addEventListener("change", (e) => {
-        if (e.srcElement.checked) {
-            hihat.start();
-        } else {
-            hihat.stop();
-        }
+        hihat.mute = !e.srcElement.checked;
     });
 
     document.getElementById("play-synth").addEventListener("change", (e) => {
-        if (e.srcElement.checked) {
-            synth.start();
-        } else {
-            synth.stop();
-        }
+        synth.mute = !e.srcElement.checked;
     });
 }
