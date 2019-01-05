@@ -6,14 +6,69 @@
   <script src="entities.js"></script>
   <script src="terminal.js"></script>
   <script src="app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: repeating-linear-gradient(
+        0,
+        #000200,
+        #000200 5px,
+        #000501 5px,
+        #000501 10px
+      );
+    }
+
+    aside {
+      width: 720px;
+      height: 480px;
+    }
+
+    .controls {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-around;
+      padding: 35px 50px;
+    }
+  </style>
+
+  <style>
+    input[type=range] {
+      -webkit-appearance: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      background: #14911A;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      border: 3px solid #000000;
+      height: 31px;
+      width: 14px;
+      background: #14911A;
+      -webkit-appearance: none;
+      margin-top: -12px;
+    }
+  </style>
 </head>
 
-<body style="background-color: #000000">
-  <canvas id="terminal" width="500" height="300" style="border:1px solid #000000;"></canvas>
-  <hr />
-  <input id="frequency" type="range" min="50" max="200" step="10" value="50" />
-  <input id="amplitude" type="range" min="25" max="100" step="5" />
-  <input id="offset" type="range" min="-10" max="10" step="1" />
+<body>
+  <aside>
+    <canvas id="terminal" width="720" height="401"></canvas>
+    <div class="controls">
+      <input id="frequency" type="range" min="50" max="200" step="10" value="50" />
+      <input id="amplitude" type="range" min="25" max="100" step="5" />
+      <input id="offset" type="range" min="-10" max="10" step="1" />
+    </div>
+  </aside>
+
 </body>
 
 </html>

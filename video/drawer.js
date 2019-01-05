@@ -81,7 +81,7 @@ class CanvasDrawer {
   drawHorizontalGrid(step) {
     this.context.lineWidth = 1;
 
-    var y = step;
+    var y = 0;
     while (y < this.canvas.height) {
       this.drawLine(0, y, this.canvas.width, y, "rgba(50, 50, 50, 0.5)");
       y += step;
@@ -92,7 +92,7 @@ class CanvasDrawer {
   drawVerticalGrid(step) {
     this.context.lineWidth = 1;
 
-    var x = step;
+    var x = 0;
     while (x < this.canvas.width) {
       this.drawLine(x, 0, x, this.canvas.height, "rgba(50, 50, 50, 0.5)");
       x += step;
@@ -107,8 +107,7 @@ class CanvasDrawer {
   }
 
   clear() {
-    this.context.fillStyle = "black";
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }
 
