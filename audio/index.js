@@ -4,6 +4,13 @@
 
 const run = () => {
 
+    function createMidiToFreqConverter (tuning) {
+        tuning = tuning || 440
+        return (midi) => {
+            return midi === 0 || (midi > 0 && midi < 128) ? Math.pow(2, (midi - 69) / 12) * tuning : null
+        }
+    }
+
     function envelope(param, time, volume, attack, hold, release) {
         param.cancelScheduledValues(time);
         param.setValueAtTime(0.0001, time);
@@ -249,14 +256,15 @@ const run = () => {
     preGain.connect(convolver);
     preGain.connect(masterGain);
 
+    const conv = createMidiToFreqConverter();
     const synth = scheduler(audioContext, {
         duration: 4,
         seq: [
-            {freq: 130.8128, time: 0, hold: 0.4},
-            {freq: 164.8138, time: 1, hold: 0.4},
-            {freq: 195.9977, time: 2, hold: 0.15},
-            {freq: 130.8128, time: 2.5, hold: 0.15},
-            {freq: 164.8138, time: 3, hold: 0.15},
+            {freq: conv(48), time: 0, hold: 0.4},
+            {freq: conv(52), time: 1, hold: 0.4},
+            {freq: conv(55), time: 2, hold: 0.15},
+            {freq: conv(48), time: 2.5, hold: 0.15},
+            {freq: conv(52), time: 3, hold: 0.15},
         ]
     }, createSynthInstrument(audioContext));
     synth.start();
