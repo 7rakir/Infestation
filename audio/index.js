@@ -142,9 +142,9 @@ const run = () => {
             osc2.detune.setValueAtTime(1200, audioContext.currentTime);
             osc3.detune.setValueAtTime(1900, audioContext.currentTime);
 
-            osc1.frequency.value = 1;
-            osc2.frequency.value = 1;
-            osc3.frequency.value = 1;
+            osc1.frequency.value = 0;
+            osc2.frequency.value = 0;
+            osc3.frequency.value = 0;
 
             const gainNode = audioContext.createGain();
             gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
