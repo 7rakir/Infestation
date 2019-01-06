@@ -4,8 +4,10 @@
   <script src="controls.js"></script>
   <script src="drawer.js"></script>
   <script src="entities.js"></script>
-  <script src="terminal.js"></script>
   <script src="app.js"></script>
+  <script src="terminal.js"></script>
+  <script src="battle.js"></script>
+  
 
   <style>
     * {
@@ -20,6 +22,12 @@
         #000501 5px,
         #000501 10px
       );
+    }
+
+    main {
+      width: 870px;
+      height: 652px;
+      border: 1px solid grey;
     }
 
     aside {
@@ -60,11 +68,18 @@
 </head>
 
 <body>
+  <main>
+    <button id="top">Λ</button>
+    <button id="left">&lt;</button>
+    <button id="right">&gt;</button>
+    <button id="bottom">V</button>
+  </main>
+
   <aside>
     <canvas id="terminal" width="720" height="401"></canvas>
     <div class="controls">
       <input id="frequency" type="range" min="10" max="70" step="5" />
-      <input id="amplitude" type="range" min="30" max="190" step="10" />
+      <input id="amplitude" type="range" min="20" max="180" step="10" />
       <input id="offset" type="range" min="-10" max="10" step="1" />
     </div>
   </aside>

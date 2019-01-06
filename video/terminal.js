@@ -24,27 +24,9 @@ class Sine {
   }
 }
 
-var drawer;
-
-var previousTimestamp;
-const entities = [];
-function draw(timestamp) {
-  drawer.clear();
-
-  const progress = timestamp - previousTimestamp || 0;
-  previousTimestamp = timestamp;
-  
-  entities.forEach(entity => {
-    entity.draw();
-    entity.update(progress);
-  });
-
-  window.requestAnimationFrame(draw);
-}
-
 class Terminal {
   constructor() {
-    drawer = new CanvasDrawer("terminal");
+    const drawer = new CanvasDrawer("terminal");
 
     frequencyInput = registerInput("frequency", this.frequencyChanged.bind(this));
     amplitudeInput = registerInput("amplitude", this.amplitudeChanged.bind(this));
@@ -52,12 +34,14 @@ class Terminal {
 
     this.initializeSines();
 
-    entities.push(new GridEntity(this.checkSine));
+    const renderer = new Renderer(drawer);
 
-    entities.push(new SineEntity(this.currentSine, new Color(255, 0, 0)));
-    entities.push(new SineEntity(this.checkSine, new Color(0, 255, 0, 0.3)));
+    renderer.addEntity(new GridEntity(drawer, this.checkSine));
 
-    window.requestAnimationFrame(draw);
+    renderer.addEntity(new SineEntity(drawer, this.currentSine, new Color(255, 0, 0)));
+    renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3)));
+
+    window.requestAnimationFrame(renderer.draw);
   }
 
   initializeSines() {

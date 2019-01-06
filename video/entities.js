@@ -1,5 +1,6 @@
 class SineEntity {
-  constructor(sine, color) {
+  constructor(drawer, sine, color) {
+    this.drawer = drawer;
     this.sine = sine;
     this.headX = 0;
     this.incrementX = 0.3;
@@ -7,25 +8,26 @@ class SineEntity {
   }
 
   draw() {
-    drawer.drawSineTail(this.sine, this.headX, this.color);
-    drawer.drawSineHead(this.sine, this.headX, this.color);
+    this.drawer.drawSineTail(this.sine, this.headX, this.color);
+    this.drawer.drawSineHead(this.sine, this.headX, this.color);
   }
 
   update(timeSinceLastFrame) {
-    this.headX = (this.headX + this.incrementX * timeSinceLastFrame) % drawer.canvas.width;
+    this.headX = (this.headX + this.incrementX * timeSinceLastFrame) % this.drawer.canvas.width;
   }
 }
 
 class GridEntity {
-  constructor(checkSine) {
+  constructor(drawer, checkSine) {
+    this.drawer = drawer;
     this.checkSine = checkSine;
   }
 
   draw() {
-    drawer.drawHorizontalGrid(50);
+    this.drawer.drawHorizontalGrid(50);
 
     const stepSize = 500 / this.checkSine.frequencyMultiplier * 4 * Math.PI;
-    drawer.drawVerticalGrid(stepSize);
+    this.drawer.drawVerticalGrid(stepSize);
   }
 
   update() { }
