@@ -1,55 +1,8 @@
-var battlefield;
-
-var topInput;
-var leftInput;
-var rightInput;
-var bottomInput;
-
 window.onload = function (event) {
-  battlefield = new Battlefield();
-  topInput = document.getElementById("top");
-  leftInput = document.getElementById("left");
-  rightInput = document.getElementById("right");
-  bottomInput = document.getElementById("bottom");
-  topInput.onclick = moveSquadTop;
-  leftInput.onclick = moveSquadLeft;
-  rightInput.onclick = moveSquadRight;
-  bottomInput.onclick = moveSquadBottom;
-  updateAvailability();
+  camera = new CameraScreen();
 
   new Terminal();
 };
-
-function moveSquadTop() {
-  const targetTile = battlefield.getAdjacentTile(0, -1);
-  battlefield.moveSquad(targetTile);
-  updateAvailability();
-}
-
-function moveSquadLeft() {
-  const targetTile = battlefield.getAdjacentTile(-1, 0);
-  battlefield.moveSquad(targetTile);
-  updateAvailability();
-}
-
-function moveSquadRight() {
-  const targetTile = battlefield.getAdjacentTile(1, 0);
-  battlefield.moveSquad(targetTile);
-  updateAvailability();
-}
-
-function moveSquadBottom() {
-  const targetTile = battlefield.getAdjacentTile(0, 1);
-  battlefield.moveSquad(targetTile);
-  updateAvailability();
-}
-
-function updateAvailability() {
-  topInput.disabled = battlefield.getAdjacentTile(0, -1) === null;
-  leftInput.disabled = battlefield.getAdjacentTile(-1, 0) === null;
-  rightInput.disabled = battlefield.getAdjacentTile(1, 0) === null;
-  bottomInput.disabled = battlefield.getAdjacentTile(0, 1) === null;
-}
 
 class Renderer {
   constructor(drawer) {

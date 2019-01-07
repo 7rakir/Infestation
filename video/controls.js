@@ -2,6 +2,11 @@ var frequencyInput;
 var amplitudeInput;
 var offsetInput;
 
+var topInput;
+var leftInput;
+var rightInput;
+var bottomInput;
+
 class Input {
   constructor(id) {
     this.element = document.getElementById(id);
@@ -10,15 +15,29 @@ class Input {
   get onChange() {
     return this.element.onchange;
   }
-  set onchange(onChange) {
+  set onChange(onChange) {
     this.element.onchange = onChange;
+  }
+
+  get onClick() {
+    return this.element.onclick;
+  }
+  set onClick(onClick) {
+    this.element.onclick = onClick;
+  }
+
+  get disabled() {
+    return this.element.disabled;
+  }
+  set disabled(disabled) {
+    this.element.disabled = disabled;
   }
 
   get value() {
     return parseInt(this.element.value);
   }
   set value(value) {
-    return this.element.value = value;
+    this.element.value = value;
   }
 
   get min() {
@@ -37,12 +56,6 @@ class Input {
     this.element.value = this.value + change * this.step;
     this.element.dispatchEvent(new Event("change"));
   }
-}
-
-function registerInput(inputId, onChange) {
-  var input = new Input(inputId);
-  input.onchange = onChange;
-  return input;
 }
 
 document.addEventListener("keydown", onKeyDown, false);

@@ -1,3 +1,45 @@
+class CameraScreen {
+  constructor() {
+    const drawer = new CanvasDrawer("camera");
+    const battlefield = new Battlefield();
+    const controls = new SquadControls(battlefield);
+  }
+}
+
+class SquadControls {
+  constructor(battlefield) {
+    this.battlefield = battlefield;
+    topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
+    leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
+    rightInput = this.registerDirectionInput("right", this.moveSquad.bind(this), 1, 0);
+    bottomInput = this.registerDirectionInput("bottom", this.moveSquad.bind(this), 0, 1);
+    this.updateAvailability();
+  }
+
+  moveSquad(dx, dy) {
+    const targetTile = this.battlefield.getAdjacentTile(dx, dy);
+    this.battlefield.moveSquad(targetTile);
+    this.updateAvailability();
+  }
+  
+  updateAvailability() {
+    topInput.disabled = this.battlefield.getAdjacentTile(topInput.dx, topInput.dy) === null;
+    leftInput.disabled = this.battlefield.getAdjacentTile(leftInput.dx, leftInput.dy) === null;
+    rightInput.disabled = this.battlefield.getAdjacentTile(rightInput.dx, rightInput.dy) === null;
+    bottomInput.disabled = this.battlefield.getAdjacentTile(bottomInput.dx, bottomInput.dy) === null;
+  }
+
+  registerDirectionInput(id, onClick, dx, dy) {
+    const input = new Input(id);
+    input.onClick = function() {
+      onClick(dx, dy);
+    };
+    input.dx = dx;
+    input.dy = dy;
+    return input;
+  }
+}
+
 class Battlefield {
   constructor() {
     this.grid = new Grid(5);
@@ -14,7 +56,7 @@ class Battlefield {
   moveSquad(tile) {
     this.leaveBattle();
     this.squad.changeTile(tile);
-    console.log("» " + this.currentTile.x + "," + this.currentTile.y);
+    console.log("> " + this.currentTile.x + "," + this.currentTile.y);
     this.doBattle();
   }
 

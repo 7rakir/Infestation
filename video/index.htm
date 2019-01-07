@@ -7,7 +7,7 @@
   <script src="app.js"></script>
   <script src="terminal.js"></script>
   <script src="battle.js"></script>
-  
+
 
   <style>
     * {
@@ -28,6 +28,11 @@
       width: 870px;
       height: 652px;
       border: 1px solid grey;
+      position: relative;
+    }
+
+    main canvas {
+      margin: 40px;
     }
 
     aside {
@@ -65,14 +70,76 @@
       margin-top: -12px;
     }
   </style>
+
+  <style>
+    button.direction {
+      border: none;
+      width: 40px;
+      height: 180px;
+      position: absolute;
+      outline: none;
+      background: transparent;
+    }
+
+    button.direction polyline {
+      fill: #14911A;
+    }
+
+    button:disabled.direction polyline {
+      fill: rgb(4, 27, 6);
+    }
+
+    button.direction.top {
+      transform: rotate(90deg);
+      left: calc(50% - 20px);
+      top: -70px;
+    }
+
+    button.direction.right {
+      transform: rotate(180deg);
+      top: calc(50% - 90px);
+      right: -4px;
+    }
+
+    button.direction.bottom {
+      transform: rotate(270deg);
+      left: calc(50% - 20px);
+      bottom: -74px;
+    }
+
+    button.direction.left {
+      transform: rotate(0deg);
+      top: calc(50% - 90px);
+      left: 0;
+    }
+  </style>
 </head>
 
 <body>
+
   <main>
-    <button id="top">Λ</button>
-    <button id="left">&lt;</button>
-    <button id="right">&gt;</button>
-    <button id="bottom">V</button>
+    <button id="top" class="direction top">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="left" class="direction left">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="right" class="direction right">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="bottom" class="direction bottom">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <canvas id="camera" width="790" height="572" style="border: 1px solid grey"></canvas>
+
   </main>
 
   <aside>

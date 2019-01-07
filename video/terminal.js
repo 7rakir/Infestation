@@ -28,9 +28,12 @@ class Terminal {
   constructor() {
     const drawer = new CanvasDrawer("terminal");
 
-    frequencyInput = registerInput("frequency", this.frequencyChanged.bind(this));
-    amplitudeInput = registerInput("amplitude", this.amplitudeChanged.bind(this));
-    offsetInput = registerInput("offset", this.offsetChanged.bind(this));
+    frequencyInput = new Input("frequency");
+    frequencyInput.onChange = this.frequencyChanged.bind(this);
+    amplitudeInput = new Input("amplitude");
+    amplitudeInput.onChange = this.amplitudeChanged.bind(this);
+    offsetInput = new Input("offset");
+    offsetInput.onChange = this.offsetChanged.bind(this);
 
     this.initializeSines();
 
