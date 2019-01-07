@@ -16,6 +16,18 @@ class Renderer {
     this.entities.push(entity);
   }
 
+  removeEntity(removedEntity) {
+    this.entities = this.entities.filter(function (entity) {
+      return entity !== removedEntity;
+    });
+  }
+
+  removeEntityWhere(predicate) {
+    this.entities = this.entities.filter(function (entity) {
+      return !predicate(entity);
+    });
+  }
+
   draw(timestamp) {
     this.drawer.clear();
 

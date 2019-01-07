@@ -106,6 +106,26 @@ class CanvasDrawer {
     this.context.lineTo(x2, y2);
   }
 
+  drawMarine(x, y) {
+    var color = new Color(0, 0, 150);
+    this.context.beginPath();
+    this.context.strokeStyle = color.full();
+    this.context.arc(x, y, 10, 0, 2 * Math.PI);
+    this.context.fillStyle = color.full();
+    this.context.fill();
+    this.context.stroke();
+  }
+
+  drawAlien(x, y) {
+    var color = new Color(150, 0, 0);
+    this.context.beginPath();
+    this.context.strokeStyle = color.full();
+    this.context.arc(x, y, 10, 0, 2 * Math.PI);
+    this.context.fillStyle = color.full();
+    this.context.fill();
+    this.context.stroke();
+  }
+
   clear() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }

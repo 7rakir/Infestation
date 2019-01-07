@@ -1,14 +1,44 @@
 class CameraScreen {
   constructor() {
-    const drawer = new CanvasDrawer("camera");
-    const battlefield = new Battlefield();
-    const controls = new SquadControls(battlefield);
+    this.drawer = new CanvasDrawer("camera");
+    const battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this));
+    const controls = new SquadControls(battlefield, this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
+
+    this.renderer = new Renderer(this.drawer);
+    battlefield.squad.marines.forEach(marine => {
+      this.renderer.addEntity(new MarineEntity(this.drawer, marine));
+    });
+
+    this.currentAlienEntities = [];
+
+    window.requestAnimationFrame(this.renderer.draw);
+  }
+
+  onSquadLeave() {
+    this.currentAlienEntities.forEach(alienEntity => {
+      this.renderer.removeEntity(alienEntity);
+    });
+  }
+
+  onSquadArrive(targetTile) {
+    this.currentAlienEntities = targetTile.aliens.map(alien => new AlienEntity(this.drawer, alien));
+    this.currentAlienEntities.forEach(alienEntity => this.renderer.addEntity(alienEntity));
+  }
+
+  onMarineDeath(marine) {
+    this.renderer.removeEntityWhere(marineEntity => marineEntity.marine == marine);
+  }
+
+  onAlienDeath(alien) {
+    this.renderer.removeEntityWhere(alienEntity => alienEntity.alien == alien);
   }
 }
 
 class SquadControls {
-  constructor(battlefield) {
+  constructor(battlefield, onSquadLeave, onSquadArrive) {
     this.battlefield = battlefield;
+    this.onSquadLeave = onSquadLeave;
+    this.onSquadArrive = onSquadArrive;
     topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
     leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
     rightInput = this.registerDirectionInput("right", this.moveSquad.bind(this), 1, 0);
@@ -17,9 +47,11 @@ class SquadControls {
   }
 
   moveSquad(dx, dy) {
+    this.onSquadLeave();
     const targetTile = this.battlefield.getAdjacentTile(dx, dy);
     this.battlefield.moveSquad(targetTile);
     this.updateAvailability();
+    this.onSquadArrive(targetTile);
   }
   
   updateAvailability() {
@@ -41,9 +73,12 @@ class SquadControls {
 }
 
 class Battlefield {
-  constructor() {
+  constructor(onMarineDeath, onAlienDeath) {
+    this.onMarineDeath = onMarineDeath;
+    this.onAlienDeath = onAlienDeath;
+
     this.grid = new Grid(5);
-    this.squad = new Squad(this.grid.getTile(0, 0), 3);
+    this.squad = new Squad(this.grid.getTile(0, 0), 4);
 
     this.squadAttacks = this.squadAttacks.bind(this);
     this.aliensAttack = this.aliensAttack.bind(this);
@@ -93,6 +128,7 @@ class Battlefield {
     const targetDied = marine.attack(alien);
 
     if (targetDied) {
+      this.onAlienDeath(alien);
       this.currentTile.removeAlien(alien);
       console.log("marine killed alien");
     }
@@ -103,6 +139,7 @@ class Battlefield {
     const targetDied = alien.attack(marine);
     
     if (targetDied) {
+      this.onMarineDeath(marine);
       this.squad.removeMarine(marine);
       console.log("alien killed marine");
     }
@@ -138,7 +175,7 @@ class Tile {
 
     this.aliens = [];
     for (var i = 0; i < alienCount; i++) {
-      this.aliens.push(new Unit(2, 1));
+      this.aliens.push(new Unit(2, 1, i));
     }
   }
 
@@ -157,7 +194,8 @@ class Grid {
     for (var i = 0; i < this.tiles.length; i++) {
       this.tiles[i] = new Array(size);
       for (var j = 0; j < this.tiles[i].length; j++) {
-        this.tiles[i][j] = new Tile(j, i, 1);
+        const alienCount = random(1, 4);
+        this.tiles[i][j] = new Tile(j, i, alienCount);
       }
     }
   }
@@ -173,7 +211,7 @@ class Squad {
 
     this.marines = [];
     for (var i = 0; i < squadSize; i++) {
-      this.marines.push(new Unit(10, 1));
+      this.marines.push(new Unit(10, 1, i));
     }
   }
 
@@ -189,9 +227,10 @@ class Squad {
 }
 
 class Unit {
-  constructor(hitpoints, power) {
+  constructor(hitpoints, power, position) {
     this.hitpoints = hitpoints;
     this.power = power;
+    this.position = position;
   }
 
   attack(unit) {
