@@ -9,12 +9,16 @@ class CameraScreen {
       this.renderer.addEntity(new MarineEntity(this.drawer, marine));
     });
 
+    this.walls = new WallsEntity(this.drawer)
+    this.renderer.addEntity(this.walls);
+
     this.currentAlienEntities = [];
 
     window.requestAnimationFrame(this.renderer.draw);
   }
 
-  onSquadLeave() {
+  onSquadLeave(dx, dy) {
+    this.walls.move(-dx, -dy);
     this.currentAlienEntities.forEach(alienEntity => {
       this.renderer.removeEntity(alienEntity);
     });
@@ -47,7 +51,7 @@ class SquadControls {
   }
 
   moveSquad(dx, dy) {
-    this.onSquadLeave();
+    this.onSquadLeave(dx, dy);
     const targetTile = this.battlefield.getAdjacentTile(dx, dy);
     this.battlefield.moveSquad(targetTile);
     this.updateAvailability();

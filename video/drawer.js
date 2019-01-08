@@ -3,6 +3,7 @@ class CanvasDrawer {
     this.canvas = document.getElementById(canvasId);
     this.context = this.canvas.getContext("2d");
     this.yOffset = this.canvas.height / 2;
+    this.gridColor = new Color(50, 50, 50, 0.5);
   }
 
   drawSineTail(sine, headX, color) {
@@ -83,7 +84,7 @@ class CanvasDrawer {
 
     var y = 0;
     while (y < this.canvas.height) {
-      this.drawLine(0, y, this.canvas.width, y, "rgba(50, 50, 50, 0.5)");
+      this.drawHorizontalLine(y, this.gridColor);
       y += step;
     }
     this.context.stroke();
@@ -94,14 +95,23 @@ class CanvasDrawer {
 
     var x = 0;
     while (x < this.canvas.width) {
-      this.drawLine(x, 0, x, this.canvas.height, "rgba(50, 50, 50, 0.5)");
+      this.drawVerticalLine(x, this.gridColor);
       x += step;
     }
     this.context.stroke();
   }
 
+  drawVerticalLine(x, color) {
+    this.drawLine(x, 0, x, this.canvas.height, color);
+  }
+
+  drawHorizontalLine(y, color) {
+    this.drawLine(0, y, this.canvas.width, y, color);
+    
+  }
+
   drawLine(x1, y1, x2, y2, color) {
-    this.context.strokeStyle = color;
+    this.context.strokeStyle = color.full();
     this.context.moveTo(x1, y1);
     this.context.lineTo(x2, y2);
   }
