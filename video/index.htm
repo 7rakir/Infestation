@@ -4,8 +4,10 @@
   <script src="controls.js"></script>
   <script src="drawer.js"></script>
   <script src="entities.js"></script>
-  <script src="terminal.js"></script>
   <script src="app.js"></script>
+  <script src="terminal.js"></script>
+  <script src="battle.js"></script>
+
 
   <style>
     * {
@@ -20,6 +22,16 @@
         #000501 5px,
         #000501 10px
       );
+    }
+
+    main {
+      width: 870px;
+      height: 652px;
+      position: relative;
+    }
+
+    main canvas {
+      margin: 40px;
     }
 
     aside {
@@ -57,14 +69,83 @@
       margin-top: -12px;
     }
   </style>
+
+  <style>
+    button.direction {
+      border: none;
+      width: 40px;
+      height: 180px;
+      position: absolute;
+      outline: none;
+      background: transparent;
+    }
+
+    button.direction polyline {
+      fill: #14911A;
+    }
+
+    button:disabled.direction polyline {
+      fill: rgb(4, 27, 6);
+    }
+
+    button.direction.top {
+      transform: rotate(90deg);
+      left: calc(50% - 20px);
+      top: -70px;
+    }
+
+    button.direction.right {
+      transform: rotate(180deg);
+      top: calc(50% - 90px);
+      right: -4px;
+    }
+
+    button.direction.bottom {
+      transform: rotate(270deg);
+      left: calc(50% - 20px);
+      bottom: -74px;
+    }
+
+    button.direction.left {
+      transform: rotate(0deg);
+      top: calc(50% - 90px);
+      left: 0;
+    }
+  </style>
 </head>
 
 <body>
+
+  <main>
+    <button id="top" class="direction top">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="left" class="direction left">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="right" class="direction right">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <button id="bottom" class="direction bottom">
+      <svg width="40px" height="180px">
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+      </svg>
+    </button>
+    <canvas id="camera" width="790" height="572"></canvas>
+
+  </main>
+
   <aside>
     <canvas id="terminal" width="720" height="401"></canvas>
     <div class="controls">
-      <input id="frequency" type="range" min="50" max="200" step="10" value="50" />
-      <input id="amplitude" type="range" min="25" max="100" step="5" />
+      <input id="frequency" type="range" min="10" max="70" step="5" />
+      <input id="amplitude" type="range" min="20" max="180" step="10" />
       <input id="offset" type="range" min="-10" max="10" step="1" />
     </div>
   </aside>

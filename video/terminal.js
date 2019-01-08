@@ -24,72 +24,75 @@ class Sine {
   }
 }
 
-var drawer;
-
-var currentSine = new Sine(50, 100, 0);
-
-const randomAmplitude = random(25, 100, 5);
-const randomFrequency = random(50, 200, 10);
-const randomOffset = random(-10, 10, 1);
-var checkSine = new Sine(randomAmplitude, randomFrequency, randomOffset);
-
-const entities = [];
-
-function draw() {
-  drawer.clear();
-
-  entities.forEach(entity => {
-    entity.draw();
-    entity.tick();
-  });
-
-  window.requestAnimationFrame(draw);
-}
-
 class Terminal {
   constructor() {
-    drawer = new CanvasDrawer("terminal");
+    const drawer = new CanvasDrawer("terminal");
 
-    frequencyInput = registerInput("frequency", currentSine.frequencyMultiplier, frequencyChanged);
-    amplitudeInput = registerInput("amplitude", currentSine.amplitude, amplitudeChanged);
-    offsetInput = registerInput("offset", currentSine.offset, offsetChanged);
+    frequencyInput = new Input("frequency");
+    frequencyInput.onChange = this.frequencyChanged.bind(this);
+    amplitudeInput = new Input("amplitude");
+    amplitudeInput.onChange = this.amplitudeChanged.bind(this);
+    offsetInput = new Input("offset");
+    offsetInput.onChange = this.offsetChanged.bind(this);
 
-    entities.push(new GridEntity(checkSine));
+    this.initializeSines();
 
-    entities.push(new SineEntity(currentSine, new Color(255, 0, 0)));
-    entities.push(new SineEntity(checkSine, new Color(0, 255, 0, 0.3)));
+    const renderer = new Renderer(drawer);
 
-    window.requestAnimationFrame(draw);
+    renderer.addEntity(new GridEntity(drawer, this.checkSine));
+
+    renderer.addEntity(new SineEntity(drawer, this.currentSine, new Color(255, 0, 0)));
+    renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3)));
+
+    window.requestAnimationFrame(renderer.draw);
+  }
+
+  initializeSines() {
+    this.currentSine = new Sine(
+      (amplitudeInput.max + amplitudeInput.min) / 2, 
+      (frequencyInput.max + frequencyInput.min) / 2, 
+      (offsetInput.max + offsetInput.min) / 2
+    );
+
+    amplitudeInput.value = this.currentSine.amplitude;
+    frequencyInput.value = this.currentSine.frequencyMultiplier;
+    offsetInput.value = this.currentSine.offset;
+
+    const randomAmplitude = random(amplitudeInput.min, amplitudeInput.max, amplitudeInput.step);
+    const randomFrequency = random(frequencyInput.min, frequencyInput.max, frequencyInput.step);
+    const randomOffset = random(offsetInput.min, offsetInput.max, offsetInput.step);
+
+    this.checkSine = new Sine(randomAmplitude, randomFrequency, randomOffset);
+  }
+
+  frequencyChanged() {
+    this.currentSine.frequencyMultiplier = frequencyInput.value;
+    this.checkSynchronization();
+  }
+  
+  amplitudeChanged() {
+    this.currentSine.amplitude = amplitudeInput.value;
+    this.checkSynchronization();
+  }
+  
+  offsetChanged() {
+    this.currentSine.offsetX = offsetInput.value;
+    this.checkSynchronization();
+  }
+
+  checkSynchronization() {
+    const frequenciesEqual = this.currentSine.frequencyMultiplier == this.checkSine.frequencyMultiplier;
+    const amplitudesEqual = this.currentSine.amplitude == this.checkSine.amplitude;
+  
+    const offsetDifference = this.currentSine.offsetX - this.checkSine.offsetX;
+    const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
+  
+    if (frequenciesEqual && amplitudesEqual && offsetInSync) {
+      alert("Winner is you!");
+    }
   }
 }
 
-function frequencyChanged() {
-  currentSine.frequencyMultiplier = parseInt(frequencyInput.value);
-  checkSynchronization(currentSine, checkSine);
-}
-
-function amplitudeChanged() {
-  currentSine.amplitude = parseInt(amplitudeInput.value);
-  checkSynchronization(currentSine, checkSine);
-}
-
-function offsetChanged() {
-  currentSine.offsetX = parseInt(offsetInput.value);
-  checkSynchronization(currentSine, checkSine);
-}
-
-function checkSynchronization(currentSine, checkSine) {
-  const frequenciesEqual = currentSine.frequencyMultiplier == checkSine.frequencyMultiplier;
-  const amplitudesEqual = currentSine.amplitude == checkSine.amplitude;
-
-  const offsetDifference = currentSine.offsetX - checkSine.offsetX;
-  const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
-
-  if (frequenciesEqual && amplitudesEqual && offsetInSync) {
-    alert("Winner is you!");
-  }
-}
-
-function random(min, max, step) {
+function random(min, max, step = 1) {
   return min + (step * Math.floor(Math.random() * (max - min + 1) / step));
 }
