@@ -57,8 +57,8 @@ class AlienEntity {
   constructor(drawer, alien, direction) {
     this.drawer = drawer;
     this.alien = alien;
-    this.spacing = 40;
-    this.originX = drawer.canvas.width / 2 - 200;
+    this.spacing = 100;
+    this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
     const position = getUnitPosition(this.alien.position, this.spacing);
@@ -70,13 +70,25 @@ class AlienEntity {
     this.drawer.drawAlien(this.x, this.y);
   }
 
-  update() { }
+  update(timeSinceLastFrame) {
+    if(this.animation && this.animation.moving) {
+      var increment = this.animation.update(timeSinceLastFrame);
+      this.x = (this.x + increment.x);
+      this.y = (this.y + increment.y);
+    }
+  }
+
+  move(dx, dy) {
+    const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
+    this.animation = new Animation(directionMax, 0.5);
+    this.animation.start(dx, dy);
+  }
 }
 
 class WallsEntity {
   constructor(drawer) {
     this.drawer = drawer;
-    this.spacing = 100;
+    this.spacing = 50;
 
     this.walls = [];
     this.walls.push(this.getWall(false, false));

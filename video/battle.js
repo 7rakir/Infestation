@@ -21,11 +21,14 @@ class CameraScreen {
   onSquadLeave(dx, dy) {
     this.walls.move(-dx, -dy);
     this.currentAlienEntities.forEach(alienEntity => {
-      this.renderer.removeEntity(alienEntity);
+      alienEntity.move(-dx, -dy);
     });
   }
 
   onSquadArrive(targetTile) {
+    this.currentAlienEntities.forEach(alienEntity => {
+      this.renderer.removeEntity(alienEntity);
+    });
     this.currentAlienEntities = targetTile.aliens.map(alien => new AlienEntity(this.drawer, alien));
     this.currentAlienEntities.forEach(alienEntity => this.renderer.addEntity(alienEntity));
   }
@@ -52,11 +55,16 @@ class SquadControls {
   }
 
   moveSquad(dx, dy) {
+    console.log("leaving " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
     this.onSquadLeave(dx, dy);
     const targetTile = this.battlefield.getAdjacentTile(dx, dy);
     this.battlefield.moveSquad(targetTile);
     this.updateAvailability();
-    this.onSquadArrive(targetTile);
+    setTimeout(() => {
+      console.log("entering " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
+      this.onSquadArrive(targetTile);
+      this.battlefield.doBattle();
+    }, 1500);
   }
   
   updateAvailability() {
@@ -96,13 +104,11 @@ class Battlefield {
   moveSquad(tile) {
     this.leaveBattle();
     this.squad.changeTile(tile);
-    console.log("> " + this.currentTile.x + "," + this.currentTile.y);
-    this.doBattle();
   }
 
   doBattle() {
-    this.squadAttacking = setInterval(this.squadAttacks, 1000);
-    this.aliensAttacking = setInterval(this.aliensAttack, 750);
+    this.squadAttacking = setInterval(this.squadAttacks, 3000);
+    this.aliensAttacking = setInterval(this.aliensAttack, 2000);
   }
 
   leaveBattle() {
@@ -116,6 +122,11 @@ class Battlefield {
       if (closestAlien) {
         this.resolveMarineAttack(marine, closestAlien);
       }
+      else {
+        this.leaveBattle();
+        console.log("sector clear");
+        return;
+      }
     });
   }
 
@@ -124,6 +135,11 @@ class Battlefield {
       const closestMarine = this.getClosestMarine();
       if (closestMarine) {
         this.resolveAlienAttack(alien, closestMarine);
+      }
+      else {
+        this.leaveBattle();
+        console.log("squad killed");
+        return;
       }
     });
   }
