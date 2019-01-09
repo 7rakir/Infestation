@@ -107,7 +107,6 @@ class CanvasDrawer {
 
   drawHorizontalLine(y, color) {
     this.drawLine(0, y, this.canvas.width, y, color);
-    
   }
 
   drawLine(x1, y1, x2, y2, color) {
