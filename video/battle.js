@@ -5,12 +5,13 @@ class CameraScreen {
     const controls = new SquadControls(battlefield, this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
 
     this.renderer = new Renderer(this.drawer);
+
+    this.walls = new WallsEntity(this.drawer);
+    this.renderer.addEntity(this.walls);
+
     battlefield.squad.marines.forEach(marine => {
       this.renderer.addEntity(new MarineEntity(this.drawer, marine));
     });
-
-    this.walls = new WallsEntity(this.drawer)
-    this.renderer.addEntity(this.walls);
 
     this.currentAlienEntities = [];
 
