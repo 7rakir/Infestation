@@ -102,20 +102,18 @@ class WallsEntity {
   }
 
   update(timeSinceLastFrame) {
-    var increment = this.increment * timeSinceLastFrame;
-    const checkWall = this.dx !== 0 ? this.verticalWalls[0] : this.horizontalWalls[0];
+    var increment = 0;
     if(this.moving) {
+      increment = this.increment * timeSinceLastFrame;
       this.currentMoveLength += increment;
+      const checkWall = this.dx !== 0 ? this.verticalWalls[0] : this.horizontalWalls[0];
       if(this.currentMoveLength >= checkWall.max - 2 * this.spacing) {
         increment += (checkWall.max - 2 * this.spacing) - this.currentMoveLength;
+        this.stop();
       }
     }
     this.horizontalWalls.forEach(wall => this.updateWall(wall, increment, this.dy));
     this.verticalWalls.forEach(wall => this.updateWall(wall, increment, this.dx));
-    
-    if(this.currentMoveLength >= checkWall.max - 2 * this.spacing) {
-      this.stop();
-    }
   }
 
   move(dx, dy) {
@@ -127,12 +125,10 @@ class WallsEntity {
   stop() {
     this.moving = false;
     this.currentMoveLength = 0;
-    this.dx = 0;
-    this.dy = 0;
   }
 
   updateWall(wall, increment, change) {
-    const screen = 2 * wall.max - 4 * this.spacing
+    const screen = 2 * wall.max - 4 * this.spacing;
     wall.position = (((wall.position + change * increment) % screen) + screen) % screen;
   }
 }
