@@ -348,31 +348,56 @@ const run = () => {
 
     const conv = createMidiToFreqConverter();
     const synth = {
-        length: 32,
+        length: 64,
         seq: [
-            {freq: conv(48), step: 0, hold: 4},
-            {freq: conv(52), step: 8, hold: 4},
-            {freq: conv(55), step: 16, hold: 4},
-            {freq: conv(48), step: 20, hold: 2},
-            {freq: conv(52), step: 24, hold: 2},
+            {freq: conv(60), step: 0, hold: 2},
+            {freq: conv(69), step: 4, hold: 1},
+            {freq: conv(60), step: 8, hold: 4},
+            {freq: conv(69), step: 16, hold: 4},
+            {freq: conv(69), step: 22, hold: 1},
+            {freq: conv(69), step: 30, hold: 1},
+            {freq: conv(60), step: 32+0, hold: 2},
+            {freq: conv(69), step: 32+4, hold: 1},
+            {freq: conv(60), step: 32+8, hold: 4},
+            {freq: conv(67), step: 32+16, hold: 4},
+            {freq: conv(67), step: 32+22, hold: 1},
+            {freq: conv(67), step: 32+30, hold: 1},
         ],
         instrument: createSynthInstrument(audioContext),
     };
     synth.instrument.connect(preGain);
 
+    const bass = {
+        length: 32,
+        seq: [
+            {freq: conv(24), step: 0, hold: 3},
+            {freq: conv(24), step: 6, hold: 3},
+            {freq: conv(24), step: 10, hold: 3},
+            {freq: conv(28), step: 16, hold: 3},
+            {freq: conv(28), step: 22, hold: 3},
+            {freq: conv(28), step: 26, hold: 3},
+        ],
+        instrument: createSynthInstrument(audioContext),
+    };
+    bass.instrument.connect(preGain);
+
     const hihat = {
-        length: 4,
+        length: 16,
         seq: [
             {step: 2},
+            {step: 8},
+            {step: 14},
         ],
         instrument: createHiHatInstrument(audioContext),
     };
     hihat.instrument.connect(preGain);
 
     const kick = {
-        length: 4,
+        length: 16,
         seq: [
             {step: 0},
+            {step: 6},
+            {step: 10},
         ],
         instrument:  createKickInstrument(audioContext),
     };
@@ -387,7 +412,7 @@ const run = () => {
     };
     snare.instrument.connect(preGain);
 
-    const s = scheduler(audioContext, [kick, hihat, snare, synth]);
+    const s = scheduler(audioContext, [kick, hihat, snare, synth, bass]);
     s.start();
 
     document.getElementById("stop").onclick = () => {
@@ -421,6 +446,10 @@ const run = () => {
 
     document.getElementById("play-synth").addEventListener("change", (e) => {
         synth.mute = !e.srcElement.checked;
+    });
+
+    document.getElementById("play-bass").addEventListener("change", (e) => {
+        bass.mute = !e.srcElement.checked;
     });
 
     document.getElementById("bpm").addEventListener("change", (e) => {
