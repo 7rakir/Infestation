@@ -42,3 +42,42 @@ class Renderer {
     window.requestAnimationFrame(this.draw);
   }
 }
+
+class Animation {
+  constructor(finalLength, speed) {
+    this.dx = 0;
+    this.dy = 0;
+    this.moving = false;
+    this.currentLength = 0;
+    this.finalLength = finalLength;
+    this.speed = speed;
+  }
+
+  start(dx, dy) {
+    this.moving = true;
+    this.dx = dx;
+    this.dy = dy;
+  }
+
+  update(timeSinceLastFrame) {
+    var increment = this.speed * timeSinceLastFrame;
+
+    this.currentLength += increment;
+
+    const overshoot = this.finalLength - this.currentLength;
+    if (overshoot < 0) {
+      increment += overshoot;
+      this.stop();
+    }
+
+    return {
+      x: increment * this.dx,
+      y: increment * this.dy
+    };
+  }
+
+  stop() {
+    this.moving = false;
+    this.currentMoveLength = 0;
+  }
+}

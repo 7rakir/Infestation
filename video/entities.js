@@ -57,8 +57,8 @@ class AlienEntity {
   constructor(drawer, alien, direction) {
     this.drawer = drawer;
     this.alien = alien;
-    this.spacing = 40;
-    this.originX = drawer.canvas.width / 2 - 200;
+    this.spacing = 100;
+    this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
     const position = getUnitPosition(this.alien.position, this.spacing);
@@ -70,7 +70,84 @@ class AlienEntity {
     this.drawer.drawAlien(this.x, this.y);
   }
 
-  update() { }
+  update(timeSinceLastFrame) {
+    if(this.animation && this.animation.moving) {
+      var increment = this.animation.update(timeSinceLastFrame);
+      this.x = (this.x + increment.x);
+      this.y = (this.y + increment.y);
+    }
+  }
+
+  move(dx, dy) {
+    const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
+    this.animation = new Animation(directionMax, 0.5);
+    this.animation.start(dx, dy);
+  }
+}
+
+class WallsEntity {
+  constructor(drawer) {
+    this.drawer = drawer;
+    this.spacing = 50;
+
+    this.walls = [];
+    this.walls.push(this.getWall(false, false));
+    this.walls.push(this.getWall(false, true));
+    this.walls.push(this.getWall(true, false));
+    this.walls.push(this.getWall(true, true));
+    
+    this.color = new Color(80, 80, 80);
+  }
+
+  draw() {
+    this.drawer.context.beginPath();
+    this.walls.forEach(wall => wall.lineDrawer(wall));
+    this.drawer.context.stroke();
+  }
+
+  update(timeSinceLastFrame) {
+    if(this.animation && this.animation.moving) {
+      var increment = this.animation.update(timeSinceLastFrame);
+      this.walls.forEach(wall => this.updateWall(wall, increment));
+    }
+  }
+
+  move(dx, dy) {
+    const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
+    this.animation = new Animation(directionMax - 2 * this.spacing, 0.5);
+    this.animation.start(dx, dy);
+  }
+
+  updateWall(wall, increment) {
+    const screen = 2 * wall.max - 4 * this.spacing;
+    wall.x = (((wall.x + increment.x) % screen) + screen) % screen;
+    wall.y = (((wall.y + increment.y) % screen) + screen) % screen;
+  }
+
+  drawHorizontalWall(wall) {
+    this.drawer.drawLine(0, wall.y, this.drawer.canvas.width, wall.y, this.color);
+  }
+
+  drawVerticalWall(wall) {
+    this.drawer.drawLine(wall.x, 0, wall.x, this.drawer.canvas.height, this.color);
+  }
+
+  getWall(start, horizontal) {
+    const wall = {};
+    if(horizontal) {
+      wall.max = this.drawer.canvas.height;
+      wall.lineDrawer = this.drawHorizontalWall.bind(this);
+      wall.x = 0;
+      wall.y = start ? this.spacing : wall.max - this.spacing;
+    }
+    else {
+      wall.max = this.drawer.canvas.width;
+      wall.lineDrawer = this.drawVerticalWall.bind(this);
+      wall.x = start ? this.spacing : wall.max - this.spacing;
+      wall.y = 0;
+    }
+    return wall;
+  }
 }
 
 function getUnitPosition(position, spacing) {
