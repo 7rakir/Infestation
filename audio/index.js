@@ -209,9 +209,42 @@ const run = () => {
     }
 
     function scheduler(audioContext, loops) {
+
+        function createGrid() {
+            let bpm = 130;
+            let currentStep = 0;
+            let currentTime = 0;
+
+            function stepLength() {
+                return 15 / bpm;
+            }
+
+            return {
+                getStepTime: (step) => {
+                    const diff = step - currentStep;
+                    return currentTime + (diff * stepLength());
+                },
+                update: () => {
+                    if (currentTime < audioContext.currentTime) {
+                        currentStep++;
+                        currentTime += stepLength();
+                    }
+                },
+                setBPM: (newBPM) => {
+                    bpm = newBPM;
+                },
+                getBPM: () => {
+                    return bpm;
+                },
+                stepLength: () => {
+                    return stepLength();
+                }
+            };
+        }
+
         const lookahead = 25.0;         // milliseconds
         const scheduleAheadTime = 0.1;  // seconds
-        let timerId = null;
+        const grid = createGrid();
 
         function loopScheduler(loop){
             let currentLoop = 0;
@@ -224,8 +257,12 @@ const run = () => {
                     currentLoop++;
                 }
                 if (!loop.mute) {
-                    const params = loop.seq[currentNote];
-                    loop.instrument.play({...params, time: (loop.duration * currentLoop) + params.time});
+                    const patternParams = loop.seq[currentNote];
+                    const timeParams = {...patternParams, time: grid.getStepTime((loop.length * currentLoop) + patternParams.step)}
+                    if (!!timeParams.hold) {
+                        timeParams.hold = timeParams.hold * grid.stepLength();
+                    }
+                    loop.instrument.play(timeParams);
                 }
             }
 
@@ -236,7 +273,8 @@ const run = () => {
                     next = 0;
                     l++;
                 }
-                return (loop.duration * l) + loop.seq[next].time;
+
+                return grid.getStepTime((loop.length * l) + loop.seq[next].step);
             }
 
             return {
@@ -250,15 +288,24 @@ const run = () => {
 
         const loopSchedulers = loops.map(loop => loopScheduler(loop));
 
+        let timerId = null;
+
         return {
             stop: () => {
                 clearInterval(timerId);
             },
             start: () => {
                 timerId = setInterval(() => {
+                    grid.update();
                     loopSchedulers.forEach(w => w.schedule());
                 }, lookahead);
-            }
+            },
+            setBPM: (newBPM) => {
+                grid.setBPM(newBPM);
+            },
+            getBPM: () => {
+                return grid.getBPM();
+            },
         }
     }
 
@@ -301,42 +348,40 @@ const run = () => {
 
     const conv = createMidiToFreqConverter();
     const synth = {
-        duration: 4,
+        length: 32,
         seq: [
-            {freq: conv(48), time: 0, hold: 1},
-            {freq: conv(52), time: 1, hold: 1},
-            {freq: conv(55), time: 2, hold: 1},
-            {freq: conv(48), time: 2.5, hold: 0.5},
-            {freq: conv(52), time: 3, hold: 0.5},
+            {freq: conv(48), step: 0, hold: 4},
+            {freq: conv(52), step: 8, hold: 4},
+            {freq: conv(55), step: 16, hold: 4},
+            {freq: conv(48), step: 20, hold: 2},
+            {freq: conv(52), step: 24, hold: 2},
         ],
         instrument: createSynthInstrument(audioContext),
     };
     synth.instrument.connect(preGain);
 
     const hihat = {
-        duration: 1,
+        length: 4,
         seq: [
-            {time: 0.25},
-            {time: 0.75},
+            {step: 2},
         ],
         instrument: createHiHatInstrument(audioContext),
     };
     hihat.instrument.connect(preGain);
 
     const kick = {
-        duration: 1,
+        length: 4,
         seq: [
-            {time: 0},
-            {time: 0.5},
+            {step: 0},
         ],
         instrument:  createKickInstrument(audioContext),
     };
     kick.instrument.connect(preGain);
 
     const snare = {
-        duration: 1,
+        length: 8,
         seq: [
-            {time: 0.5},
+            {step: 4},
         ],
         instrument: createSnareInstrument(audioContext),
     };
@@ -376,5 +421,9 @@ const run = () => {
 
     document.getElementById("play-synth").addEventListener("change", (e) => {
         synth.mute = !e.srcElement.checked;
+    });
+
+    document.getElementById("bpm").addEventListener("change", (e) => {
+        s.setBPM(e.srcElement.value);
     });
 }
