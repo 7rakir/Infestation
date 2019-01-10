@@ -63,18 +63,34 @@ class Renderer {
 }
 
 class Animation {
-  constructor(finalLength, speed, onStop) {
-    this.dx = 0;
-    this.dy = 0;
+  constructor(onStop) {
     this.moving = false;
-    this.currentLength = 0;
-    this.finalLength = finalLength;
-    this.speed = speed;
+    this.current = 0;
     this.onStop = onStop;
   }
 
-  start(dx, dy) {
+  startMoving() {
     this.moving = true;
+  }
+
+  stop() {
+    this.moving = false;
+    this.current = 0;
+    this.onStop && this.onStop();
+  }
+}
+
+class LengthAnimation extends Animation {
+  constructor(finalLength, speed, onStop) {
+    super(onStop);
+    this.speed = speed;
+    this.finalLength = finalLength;
+    this.dx = 0;
+    this.dy = 0;
+  }
+
+  start(dx, dy) {
+    this.startMoving();
     this.dx = dx;
     this.dy = dy;
   }
@@ -82,9 +98,9 @@ class Animation {
   update(timeSinceLastFrame) {
     var increment = this.speed * timeSinceLastFrame;
 
-    this.currentLength += increment;
+    this.current += increment;
 
-    const overshoot = this.finalLength - this.currentLength;
+    const overshoot = this.finalLength - this.current;
     if (overshoot < 0) {
       increment += overshoot;
       this.stop();
@@ -95,10 +111,35 @@ class Animation {
       y: increment * this.dy
     };
   }
+}
 
-  stop() {
-    this.moving = false;
-    this.currentMoveLength = 0;
-    this.onStop && this.onStop();
+class DurationAnimation extends Animation {
+  constructor(finalDuration, onExpire) {
+    super(onExpire);
+    this.finalDuration = finalDuration;
+  }
+
+  get progress() {
+    return this.progressFunction(this.current / this.finalDuration);
+  }
+
+  progressFunction(timeFraction) {
+    return Math.pow(timeFraction, 30)
+  }
+
+  start() {
+    this.startMoving();
+  }
+
+  update(timeSinceLastFrame) {
+    var increment = timeSinceLastFrame;
+
+    this.current += increment;
+
+    const overshoot = this.finalDuration - this.current;
+    if (overshoot < 0) {
+      increment += overshoot;
+      this.stop();
+    }
   }
 }

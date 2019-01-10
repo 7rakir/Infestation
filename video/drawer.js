@@ -70,10 +70,10 @@ class CanvasDrawer {
     this.context.stroke();
   }
 
-  drawSineHead(sine, x, color) {
+  drawSineHead(sine, x, color, progress) {
     this.context.beginPath();
     this.context.strokeStyle = color.full();
-    this.context.arc(x, this.yOffset - sine.y(x), 1, 0, 2 * Math.PI);
+    this.context.arc(x, this.yOffset - sine.y(x), 1 + 10 * progress, 0, 2 * Math.PI);
     this.context.fillStyle = color.full();
     this.context.fill();
     this.context.stroke();

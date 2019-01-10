@@ -1,19 +1,28 @@
 class SineEntity {
-  constructor(drawer, sine, color) {
+  constructor(drawer, sine, color, pulseDelay = 0) {
     this.drawer = drawer;
     this.sine = sine;
     this.headX = 0;
     this.incrementX = 0.3;
     this.color = color;
+
+    this.startPulse = this.startPulse.bind(this);
+
+    setTimeout(this.startPulse, pulseDelay);
   }
 
   draw() {
     this.drawer.drawSineTail(this.sine, this.headX, this.color);
-    this.drawer.drawSineHead(this.sine, this.headX, this.color);
+    this.drawer.drawSineHead(this.sine, this.headX, this.color, this.pulsing && this.pulsing.progress);
   }
 
   update(timeSinceLastFrame) {
     this.headX = (this.headX + this.incrementX * timeSinceLastFrame) % this.drawer.canvas.width;
+    this.pulsing && this.pulsing.update(timeSinceLastFrame);
+  }
+
+  startPulse() {
+    this.pulsing = new DurationAnimation(2000, this.startPulse);
   }
 }
 
@@ -80,7 +89,7 @@ class AlienEntity {
 
   move(dx, dy) {
     const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
-    this.animation = new Animation(directionMax, 0.5);
+    this.animation = new LengthAnimation(directionMax, 0.5);
     this.animation.start(dx, dy);
   }
 }
@@ -114,7 +123,7 @@ class WallsEntity {
 
   move(dx, dy, onStop) {
     const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
-    this.animation = new Animation(directionMax - 2 * this.spacing, 0.5, onStop);
+    this.animation = new LengthAnimation(directionMax - 2 * this.spacing, 0.5, onStop);
     this.animation.start(dx, dy);
   }
 
