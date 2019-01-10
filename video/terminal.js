@@ -46,7 +46,7 @@ class Terminal {
 
     renderer.addEntity(new GridEntity(drawer, this.checkSine));
     renderer.addEntity(new SineEntity(drawer, this.currentSine, new Color(255, 0, 0)));
-    renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3)));
+    renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3), 1000));
 
     window.requestAnimationFrame(renderer.draw);
   }
