@@ -25,7 +25,9 @@ class Sine {
 }
 
 class Terminal {
-  constructor() {
+  constructor(onSync) {
+    this.onSync = onSync;
+
     const drawer = new CanvasDrawer("terminal");
 
     frequencyInput = new Input("frequency");
@@ -35,12 +37,14 @@ class Terminal {
     offsetInput = new Input("offset");
     offsetInput.onChange = this.offsetChanged.bind(this);
 
+    this.currentSine = new Sine();
+    this.checkSine = new Sine();
+
     this.initializeSines();
 
     const renderer = new Renderer(drawer);
 
     renderer.addEntity(new GridEntity(drawer, this.checkSine));
-
     renderer.addEntity(new SineEntity(drawer, this.currentSine, new Color(255, 0, 0)));
     renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3)));
 
@@ -48,11 +52,9 @@ class Terminal {
   }
 
   initializeSines() {
-    this.currentSine = new Sine(
-      (amplitudeInput.max + amplitudeInput.min) / 2, 
-      (frequencyInput.max + frequencyInput.min) / 2, 
-      (offsetInput.max + offsetInput.min) / 2
-    );
+    this.currentSine.amplitude = (amplitudeInput.max + amplitudeInput.min) / 2;
+    this.currentSine.frequencyMultiplier = (frequencyInput.max + frequencyInput.min) / 2;
+    this.currentSine.offsetX = (offsetInput.max + offsetInput.min) / 2;
 
     amplitudeInput.value = this.currentSine.amplitude;
     frequencyInput.value = this.currentSine.frequencyMultiplier;
@@ -62,7 +64,9 @@ class Terminal {
     const randomFrequency = random(frequencyInput.min, frequencyInput.max, frequencyInput.step);
     const randomOffset = random(offsetInput.min, offsetInput.max, offsetInput.step);
 
-    this.checkSine = new Sine(randomAmplitude, randomFrequency, randomOffset);
+    this.checkSine.amplitude = randomAmplitude;
+    this.checkSine.frequencyMultiplier = randomFrequency;
+    this.checkSine.offsetX = randomOffset;
   }
 
   frequencyChanged() {
@@ -88,7 +92,7 @@ class Terminal {
     const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
   
     if (frequenciesEqual && amplitudesEqual && offsetInSync) {
-      alert("Winner is you!");
+      this.onSync();
     }
   }
 }

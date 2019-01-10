@@ -1,8 +1,27 @@
-window.onload = function (event) {
-  camera = new CameraScreen();
+class Game {
+  constructor() {
+    window.onload = this.start.bind(this);
+  }
 
-  new Terminal();
-};
+  start() {
+    this.camera = new CameraScreen(this.onSectorClear.bind(this), this.onGameOver.bind(this), this.onSquadArrive.bind(this));
+    this.terminal = new Terminal(this.onSync.bind(this));
+  }
+
+  onSectorClear() {}
+
+  onSquadArrive() {
+    this.terminal.initializeSines();
+  }
+
+  onGameOver() {}
+
+  onSync(){
+    this.camera.controls.unlockMoving();
+  }
+}
+
+const game = new Game();
 
 class Renderer {
   constructor(drawer) {
@@ -44,13 +63,14 @@ class Renderer {
 }
 
 class Animation {
-  constructor(finalLength, speed) {
+  constructor(finalLength, speed, onStop) {
     this.dx = 0;
     this.dy = 0;
     this.moving = false;
     this.currentLength = 0;
     this.finalLength = finalLength;
     this.speed = speed;
+    this.onStop = onStop;
   }
 
   start(dx, dy) {
@@ -79,5 +99,6 @@ class Animation {
   stop() {
     this.moving = false;
     this.currentMoveLength = 0;
+    this.onStop && this.onStop();
   }
 }

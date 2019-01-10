@@ -54,7 +54,7 @@ class MarineEntity {
 }
 
 class AlienEntity {
-  constructor(drawer, alien, direction) {
+  constructor(drawer, alien) {
     this.drawer = drawer;
     this.alien = alien;
     this.spacing = 100;
@@ -112,9 +112,9 @@ class WallsEntity {
     }
   }
 
-  move(dx, dy) {
+  move(dx, dy, onStop) {
     const directionMax = dx !== 0 ? this.drawer.canvas.width : this.drawer.canvas.height;
-    this.animation = new Animation(directionMax - 2 * this.spacing, 0.5);
+    this.animation = new Animation(directionMax - 2 * this.spacing, 0.5, onStop);
     this.animation.start(dx, dy);
   }
 

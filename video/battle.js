@@ -1,15 +1,19 @@
 class CameraScreen {
-  constructor() {
+  constructor(onSectorClear, onGameOver, onSquadArrive) {
+    this.onSectorClear = onSectorClear;
+    this.onGameOver = onGameOver;
+    this.onSquadArrive = onSquadArrive;
+
     this.drawer = new CanvasDrawer("camera");
-    const battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this));
-    const controls = new SquadControls(battlefield, this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
+    this.battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this), this.onBattleEnd.bind(this));
+    this.controls = new SquadControls(this.battlefield, this.squadLeave.bind(this));
 
     this.renderer = new Renderer(this.drawer);
 
     this.walls = new WallsEntity(this.drawer);
     this.renderer.addEntity(this.walls);
 
-    battlefield.squad.marines.forEach(marine => {
+    this.battlefield.squad.marines.forEach(marine => {
       this.renderer.addEntity(new MarineEntity(this.drawer, marine));
     });
 
@@ -18,19 +22,28 @@ class CameraScreen {
     window.requestAnimationFrame(this.renderer.draw);
   }
 
-  onSquadLeave(dx, dy) {
-    this.walls.move(-dx, -dy);
+  squadLeave(dx, dy) {
+    console.log("leaving " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
+    this.controls.lockMoving();
+    this.walls.move(-dx, -dy, this.squadArrive.bind(this));
     this.currentAlienEntities.forEach(alienEntity => {
       alienEntity.move(-dx, -dy);
     });
+    const targetTile = this.battlefield.getAdjacentTile(dx, dy);
+    this.battlefield.moveSquad(targetTile);
   }
 
-  onSquadArrive(targetTile) {
+  squadArrive() {
     this.currentAlienEntities.forEach(alienEntity => {
       this.renderer.removeEntity(alienEntity);
     });
-    this.currentAlienEntities = targetTile.aliens.map(alien => new AlienEntity(this.drawer, alien));
+    const currentTile = this.battlefield.currentTile;
+    this.currentAlienEntities = currentTile.aliens.map(alien => new AlienEntity(this.drawer, alien));
     this.currentAlienEntities.forEach(alienEntity => this.renderer.addEntity(alienEntity));
+
+    console.log("entering " + currentTile.x + "," + currentTile.y);
+    this.battlefield.doBattle();
+    this.onSquadArrive();
   }
 
   onMarineDeath(marine) {
@@ -40,13 +53,22 @@ class CameraScreen {
   onAlienDeath(alien) {
     this.renderer.removeEntityWhere(alienEntity => alienEntity.alien == alien);
   }
+
+  onBattleEnd(sectorClear) {
+    if(sectorClear) {
+      this.onSectorClear();
+    }
+    else {
+      this.onGameOver();
+    }
+  }
 }
 
 class SquadControls {
-  constructor(battlefield, onSquadLeave, onSquadArrive) {
+  constructor(battlefield, onSquadLeave) {
     this.battlefield = battlefield;
     this.onSquadLeave = onSquadLeave;
-    this.onSquadArrive = onSquadArrive;
+    this.movingLocked = false;
     topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
     leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
     rightInput = this.registerDirectionInput("right", this.moveSquad.bind(this), 1, 0);
@@ -55,28 +77,30 @@ class SquadControls {
   }
 
   moveSquad(dx, dy) {
-    console.log("leaving " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
     this.onSquadLeave(dx, dy);
-    const targetTile = this.battlefield.getAdjacentTile(dx, dy);
-    this.battlefield.moveSquad(targetTile);
     this.updateAvailability();
-    setTimeout(() => {
-      console.log("entering " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
-      this.onSquadArrive(targetTile);
-      this.battlefield.doBattle();
-    }, 1500);
   }
-  
+
+  lockMoving() {
+    this.movingLocked = true;
+    this.updateAvailability();
+  }
+
+  unlockMoving() {
+    this.movingLocked = false;
+    this.updateAvailability();
+  }
+
   updateAvailability() {
-    topInput.disabled = this.battlefield.getAdjacentTile(topInput.dx, topInput.dy) === null;
-    leftInput.disabled = this.battlefield.getAdjacentTile(leftInput.dx, leftInput.dy) === null;
-    rightInput.disabled = this.battlefield.getAdjacentTile(rightInput.dx, rightInput.dy) === null;
-    bottomInput.disabled = this.battlefield.getAdjacentTile(bottomInput.dx, bottomInput.dy) === null;
+    topInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(topInput.dx, topInput.dy) === null;
+    leftInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(leftInput.dx, leftInput.dy) === null;
+    rightInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(rightInput.dx, rightInput.dy) === null;
+    bottomInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(bottomInput.dx, bottomInput.dy) === null;
   }
 
   registerDirectionInput(id, onClick, dx, dy) {
     const input = new Input(id);
-    input.onClick = function() {
+    input.onClick = function () {
       onClick(dx, dy);
     };
     input.dx = dx;
@@ -86,9 +110,10 @@ class SquadControls {
 }
 
 class Battlefield {
-  constructor(onMarineDeath, onAlienDeath) {
+  constructor(onMarineDeath, onAlienDeath, onBattleEnd) {
     this.onMarineDeath = onMarineDeath;
     this.onAlienDeath = onAlienDeath;
+    this.onBattleEnd = onBattleEnd;
 
     this.grid = new Grid(5);
     this.squad = new Squad(this.grid.getTile(0, 0), 4);
@@ -111,9 +136,10 @@ class Battlefield {
     this.aliensAttacking = setInterval(this.aliensAttack, 2000);
   }
 
-  leaveBattle() {
+  leaveBattle(sectorClear) {
     this.squadAttacking && clearInterval(this.squadAttacking);
     this.aliensAttacking && clearInterval(this.aliensAttacking);
+    this.onBattleEnd(sectorClear);
   }
 
   squadAttacks() {
@@ -123,7 +149,7 @@ class Battlefield {
         this.resolveMarineAttack(marine, closestAlien);
       }
       else {
-        this.leaveBattle();
+        this.leaveBattle(true);
         console.log("sector clear");
         return;
       }
@@ -137,7 +163,7 @@ class Battlefield {
         this.resolveAlienAttack(alien, closestMarine);
       }
       else {
-        this.leaveBattle();
+        this.leaveBattle(false);
         console.log("squad killed");
         return;
       }
@@ -158,7 +184,7 @@ class Battlefield {
   resolveAlienAttack(alien, marine) {
     console.log("alien attacking marine:" + marine.hitpoints + "-" + alien.power);
     const targetDied = alien.attack(marine);
-    
+
     if (targetDied) {
       this.onMarineDeath(marine);
       this.squad.removeMarine(marine);

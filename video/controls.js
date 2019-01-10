@@ -67,19 +67,19 @@ function onKeyDown(event) {
     case 97:  // num1
       offsetInput.change(-1);
       break;
-    case 99:  // num3
+    case 98:  // num2
       offsetInput.change(+1);;
       break;
     case 100: // num4
       amplitudeInput.change(-1);
       break;
-    case 102: // num6
+    case 101: // num5
       amplitudeInput.change(+1);
       break;
     case 103: // num7
       frequencyInput.change(-1);
       break;
-    case 105: // num9
+    case 104: // num8
       frequencyInput.change(+1);
       break;
   }
