@@ -25,7 +25,7 @@ class Sine {
 }
 
 class Terminal {
-  constructor(onSync) {
+  constructor(onSync, audio) {
     this.onSync = onSync;
 
     const drawer = new CanvasDrawer("terminal");
@@ -45,8 +45,8 @@ class Terminal {
     const renderer = new Renderer(drawer);
 
     renderer.addEntity(new GridEntity(drawer, this.checkSine));
-    renderer.addEntity(new SineEntity(drawer, this.currentSine, new Color(255, 0, 0)));
-    renderer.addEntity(new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3), 1000));
+    renderer.addEntity(new SineEntity(drawer, audio, this.currentSine, new Color(255, 0, 0)));
+    renderer.addEntity(new SineEntity(drawer, audio, this.checkSine, new Color(0, 255, 0, 0.3), 1000));
 
     window.requestAnimationFrame(renderer.draw);
   }
@@ -73,12 +73,12 @@ class Terminal {
     this.currentSine.frequencyMultiplier = frequencyInput.value;
     this.checkSynchronization();
   }
-  
+
   amplitudeChanged() {
     this.currentSine.amplitude = amplitudeInput.value;
     this.checkSynchronization();
   }
-  
+
   offsetChanged() {
     this.currentSine.offsetX = offsetInput.value;
     this.checkSynchronization();
@@ -87,10 +87,10 @@ class Terminal {
   checkSynchronization() {
     const frequenciesEqual = this.currentSine.frequencyMultiplier == this.checkSine.frequencyMultiplier;
     const amplitudesEqual = this.currentSine.amplitude == this.checkSine.amplitude;
-  
+
     const offsetDifference = this.currentSine.offsetX - this.checkSine.offsetX;
     const offsetInSync = Math.abs(offsetDifference) == 10 || offsetDifference == 0;
-  
+
     if (frequenciesEqual && amplitudesEqual && offsetInSync) {
       this.onSync();
     }

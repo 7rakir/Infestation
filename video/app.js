@@ -1,11 +1,17 @@
 class Game {
   constructor() {
-    window.onload = this.start.bind(this);
+    const click = () => {
+      window.removeEventListener('click', click);
+      document.getElementById('start').remove();
+      this.start();
+    };
+    window.addEventListener('click', click);
   }
 
   start() {
+    this.audio = createAudio();
     this.camera = new CameraScreen(this.onSectorClear.bind(this), this.onGameOver.bind(this), this.onSquadArrive.bind(this));
-    this.terminal = new Terminal(this.onSync.bind(this));
+    this.terminal = new Terminal(this.onSync.bind(this), this.audio);
   }
 
   onSectorClear() {}
