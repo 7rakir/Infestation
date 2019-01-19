@@ -1,15 +1,10 @@
 class SineEntity {
-  constructor(drawer, audio, sine, color, pulseDelay = 0) {
+  constructor(drawer, sine, color) {
     this.drawer = drawer;
-    this.audio = audio;
     this.sine = sine;
     this.headX = 0;
     this.incrementX = 0.3;
     this.color = color;
-
-    this.startPulse = this.startPulse.bind(this);
-
-    setTimeout(this.startPulse, pulseDelay);
   }
 
   draw() {
@@ -23,8 +18,8 @@ class SineEntity {
   }
 
   startPulse() {
-    this.audio.playPulse(this.sine.frequency());
-    this.pulsing = new DurationAnimation(2000, this.startPulse);
+    //TODO: I broke the visual pulsation and I don't know how
+    this.pulsing = new DurationAnimation(2000);
   }
 }
 

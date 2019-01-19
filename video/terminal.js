@@ -45,8 +45,15 @@ class Terminal {
     const renderer = new Renderer(drawer);
 
     renderer.addEntity(new GridEntity(drawer, this.checkSine));
-    renderer.addEntity(new SineEntity(drawer, audio, this.currentSine, new Color(255, 0, 0)));
-    renderer.addEntity(new SineEntity(drawer, audio, this.checkSine, new Color(0, 255, 0, 0.3), 1000));
+
+    const currentSineEntity = new SineEntity(drawer, this.currentSine, new Color(255, 0, 0));
+    renderer.addEntity(currentSineEntity);
+    audio.pulse.setPlayerCallback(currentSineEntity.startPulse.bind(currentSineEntity)); //TODO: these bind calls feels wrong
+    audio.pulse.setPlayerFrequencyGetter(this.currentSine.frequency.bind(this.currentSine));
+    const checkSineEntity = new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3));
+    renderer.addEntity(checkSineEntity);
+    audio.pulse.setCheckCallback(checkSineEntity.startPulse.bind(checkSineEntity));
+    audio.pulse.setCheckFrequencyGetter(this.checkSine.frequency.bind(this.checkSine));
 
     window.requestAnimationFrame(renderer.draw);
   }

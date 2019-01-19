@@ -256,14 +256,26 @@ const run = () => {
                     currentNote = 0;
                     currentLoop++;
                 }
-                if (!loop.mute) {
-                    const patternParams = loop.seq[currentNote];
-                    const timeParams = {...patternParams, time: grid.getStepTime((loop.length * currentLoop) + patternParams.step)}
-                    if (!!timeParams.hold) {
-                        timeParams.hold = timeParams.hold * grid.stepLength();
-                    }
-                    loop.instrument.play(timeParams);
+                if (loop.mute) {
+                    return;
                 }
+
+                const stepParams = {...loop.seq[currentNote]};
+
+                stepParams.time = grid.getStepTime((loop.length * currentLoop) + stepParams.step);
+
+                if (!!stepParams.hold) {
+                    stepParams.hold = stepParams.hold * grid.stepLength();
+                }
+
+                if (!!stepParams.callback) {
+                    setTimeout(() => {
+                        stepParams.callback();
+                        console.log(`time difference: ${(stepParams.time - audioContext.currentTime) * 1000}`);
+                    }, Math.max(0, (stepParams.time - audioContext.currentTime) * 1000));
+                }
+
+                loop.instrument.play(stepParams);
             }
 
             function getNextNoteTime(){
@@ -395,9 +407,9 @@ const run = () => {
     const kick = {
         length: 16,
         seq: [
-            {step: 0},
-            {step: 6},
-            {step: 10},
+            {step: 0, callback: () => { console.log("Kick1"); }},
+            {step: 6, callback: () => { console.log("Kick2"); }},
+            {step: 10, callback: () => { console.log("Kick3"); }},
         ],
         instrument:  createKickInstrument(audioContext),
     };
