@@ -3,16 +3,17 @@ class Sine {
     this.amplitude = amplitude;
     this.frequencyMultiplier = frequencyMultiplier;
     this.offsetX = offsetX;
-    this.periodMultiplier = 1000;
+    this.minimalFrequency = 3;
+    this.periodMultiplier = 150;
     this.offsetXMultiplier = 0.1;
   }
 
   frequency() {
-    return this.frequencyMultiplier / this.periodMultiplier;
+    return (this.minimalFrequency + this.frequencyMultiplier) / this.periodMultiplier;
   }
 
   period() {
-    return this.periodMultiplier * 2 * Math.PI / this.frequencyMultiplier;
+    return this.periodMultiplier * 2 * Math.PI / (this.minimalFrequency + this.frequencyMultiplier);
   }
 
   offset() {
@@ -20,13 +21,14 @@ class Sine {
   }
 
   y(x) {
-    return this.amplitude * Math.sin((x - this.offset()) * (this.frequencyMultiplier / this.periodMultiplier));
+    return this.amplitude * Math.sin((x - this.offset()) * ((this.minimalFrequency + this.frequencyMultiplier) / this.periodMultiplier));
   }
 }
 
 class Terminal {
   constructor(onSync, audio) {
     this.onSync = onSync;
+    this.audio = audio;
 
     const drawer = new CanvasDrawer("terminal");
 
@@ -49,11 +51,9 @@ class Terminal {
     const currentSineEntity = new SineEntity(drawer, this.currentSine, new Color(255, 0, 0));
     renderer.addEntity(currentSineEntity);
     audio.pulse.setPlayerCallback(currentSineEntity.startPulse.bind(currentSineEntity)); //TODO: these bind calls feels wrong
-    audio.pulse.setPlayerFrequencyGetter(this.currentSine.frequency.bind(this.currentSine));
     const checkSineEntity = new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3));
     renderer.addEntity(checkSineEntity);
     audio.pulse.setCheckCallback(checkSineEntity.startPulse.bind(checkSineEntity));
-    audio.pulse.setCheckFrequencyGetter(this.checkSine.frequency.bind(this.checkSine));
 
     window.requestAnimationFrame(renderer.draw);
   }
@@ -62,6 +62,7 @@ class Terminal {
     this.currentSine.amplitude = (amplitudeInput.max + amplitudeInput.min) / 2;
     this.currentSine.frequencyMultiplier = (frequencyInput.max + frequencyInput.min) / 2;
     this.currentSine.offsetX = (offsetInput.max + offsetInput.min) / 2;
+    this.audio.pulse.setPlayerFrequency(this.currentSine.frequencyMultiplier);
 
     amplitudeInput.value = this.currentSine.amplitude;
     frequencyInput.value = this.currentSine.frequencyMultiplier;
@@ -74,10 +75,12 @@ class Terminal {
     this.checkSine.amplitude = randomAmplitude;
     this.checkSine.frequencyMultiplier = randomFrequency;
     this.checkSine.offsetX = randomOffset;
+    this.audio.pulse.setCheckFrequency(randomFrequency);
   }
 
   frequencyChanged() {
     this.currentSine.frequencyMultiplier = frequencyInput.value;
+    this.audio.pulse.setPlayerFrequency(frequencyInput.value);
     this.checkSynchronization();
   }
 

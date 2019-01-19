@@ -6,6 +6,33 @@ function createAudio() {
         }
     }
 
+    function majorScale(root) {
+        function midiToFreq (midi) {
+            const tuning = 440;
+            return midi === 0 || (midi > 0 && midi < 128) ? Math.pow(2, (midi - 69) / 12) * tuning : null
+        }
+
+        const steps = [2, 2, 1, 2, 2, 2, 1];
+        const scale = {};
+        scale[0]=root;
+        for(let i = 1; i<=Math.floor((127-root)-((127-root)/12)*(12-steps.length)); i++){
+            scale[i]=scale[i-1] + steps[(i-1)%steps.length];
+        }
+        for(let i = -1; i>-Math.floor(root-(root/12)*(12-7)); i--) {
+            let index = steps.length+i%(steps.length);
+            if (index >= steps.length) {
+                index = 0;
+            }
+            scale[i]= scale[i+1] - steps[index];
+        }
+
+        for(const prop in scale) {
+            scale[prop] = midiToFreq(scale[prop]);
+        }
+
+        return scale;
+    }
+
     function scheduler(audioContext, loops) {
 
         function createGrid() {
@@ -139,6 +166,7 @@ function createAudio() {
 
         return {
             play: (params) => {
+                console.log(params.freq());
                 osc.frequency.setValueAtTime(params.freq(), ctx.currentTime);
                 envelope(gain.gain, ctx.currentTime, 1, 0.01, 0.3, 0.5);
             },
@@ -154,17 +182,23 @@ function createAudio() {
     master.gain.value = 0.3;
     master.connect(ctx.destination);
 
-    const pulseOptions = {
-        playerCallback: () => {},
-        playerFrequencyGetter: () => 440,
-        checkCallback: () => {},
-        checkFrequencyGetter: () => 220,
-    }
+    const freqencyOffset = 60;
+
+    const state = {
+        pulse: {
+            playerCallback: () => {},
+            checkCallback: () => {},
+            frequency: 0,
+        },
+        root: freqencyOffset,
+        scale: majorScale(freqencyOffset),
+    };
+
     const pulse = {
         length: 16,
         seq: [
-            {step: 0, freq: () => pulseOptions.checkFrequencyGetter() * 10000, callback: () => pulseOptions.checkCallback()},
-            {step: 8, freq: () => pulseOptions.playerFrequencyGetter() * 10000, callback: () => pulseOptions.playerCallback()},
+            {step: 0, freq: () => state.scale[state.pulse.frequency], callback: () => state.pulse.checkCallback()},
+            {step: 8, freq: () => state.scale[0], callback: () => state.pulse.playerCallback()},
         ],
         instrument: createPulse(ctx),
     };
@@ -178,16 +212,18 @@ function createAudio() {
     return {
         pulse: {
             setPlayerCallback: (func) => {
-                pulseOptions.playerCallback = func;
+                state.pulse.playerCallback = func;
             },
             setCheckCallback: (func) => {
-                pulseOptions.checkCallback = func;
+                state.pulse.checkCallback = func;
             },
-            setPlayerFrequencyGetter: (func) => {
-                pulseOptions.playerFrequencyGetter = func;
+            setPlayerFrequency: (freq) => {
+                state.pulse.frequency =  freq - (state.root - freqencyOffset);
+                console.log(state.pulse.frequency);
             },
-            setCheckFrequencyGetter: (func) => {
-                pulseOptions.checkFrequencyGetter = func;
+            setCheckFrequency: (freq) => {
+                state.root = freqencyOffset + freq;
+                state.scale = majorScale(state.root);
             },
         },
     }
