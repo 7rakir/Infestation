@@ -1,6 +1,7 @@
 <html>
 
 <head>
+  <script src="audio.js"></script>
   <script src="controls.js"></script>
   <script src="drawer.js"></script>
   <script src="entities.js"></script>
@@ -111,6 +112,16 @@
       top: calc(50% - 90px);
       left: 0;
     }
+
+    div#start {
+      color: #14911A;
+      position: absolute;
+      width: 100%;
+      top: calc(50% - 10px);
+      font-size: 20px;
+      text-align: center;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -137,6 +148,7 @@
         <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
       </svg>
     </button>
+    <div id="start">CLICK TO START</div>
     <canvas id="camera" width="790" height="572"></canvas>
 
   </main>

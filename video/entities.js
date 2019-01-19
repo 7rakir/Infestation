@@ -1,6 +1,7 @@
 class SineEntity {
-  constructor(drawer, sine, color, pulseDelay = 0) {
+  constructor(drawer, audio, sine, color, pulseDelay = 0) {
     this.drawer = drawer;
+    this.audio = audio;
     this.sine = sine;
     this.headX = 0;
     this.incrementX = 0.3;
@@ -22,6 +23,7 @@ class SineEntity {
   }
 
   startPulse() {
+    this.audio.playPulse(this.sine.frequency());
     this.pulsing = new DurationAnimation(2000, this.startPulse);
   }
 }
@@ -49,7 +51,7 @@ class MarineEntity {
     this.spacing = 40;
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
-    
+
     const position = getUnitPosition(this.marine.position, this.spacing);
     this.x = this.originX + position.x;
     this.y = this.originY + position.y;
@@ -104,7 +106,7 @@ class WallsEntity {
     this.walls.push(this.getWall(false, true));
     this.walls.push(this.getWall(true, false));
     this.walls.push(this.getWall(true, true));
-    
+
     this.color = new Color(80, 80, 80);
   }
 
