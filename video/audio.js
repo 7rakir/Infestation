@@ -33,7 +33,30 @@ function createAudio() {
         return scale;
     }
 
-    function scheduler(audioContext, loops) {
+    function createLoopTrack(instrument, loop) {
+        let currentLoop = 0;
+        let currentNote = 0;
+
+        return {
+            instrument: instrument,
+            mute: false,
+            getCurrentNoteParams: () => {
+                return {
+                    ...loop.pattern[currentNote],
+                    step: (currentLoop * loop.length) + loop.pattern[currentNote].step
+                }
+            },
+            nextNote: () => {
+                currentNote++;
+                if (currentNote >= loop.pattern.length){
+                    currentNote = 0;
+                    currentLoop++;
+                }
+            },
+        }
+    }
+
+    function scheduler(audioContext, tracks) {
 
         function createGrid() {
             let bpm = 130;
@@ -71,47 +94,32 @@ function createAudio() {
         const scheduleAheadTime = 0.1;  // seconds
         const grid = createGrid();
 
-        function loopScheduler(loop){
-            let currentLoop = 0;
-            let currentNote = -1;
-
+        function trackScheduler(track){
             function scheduleNextNote(){
-                currentNote++;
-                if (currentNote >= loop.seq.length){
-                    currentNote = 0;
-                    currentLoop++;
+                if (!track.mute) {
+                    const noteParams = track.getCurrentNoteParams();
+
+                    noteParams.time = grid.getStepTime(noteParams.step);
+
+                    if (!!noteParams.hold) {
+                        noteParams.hold = noteParams.hold * grid.stepLength();
+                    }
+
+                    if (!!noteParams.callback) {
+                        setTimeout(() => {
+                            noteParams.callback();
+                            //console.log(`time difference: ${(stepParams.time - audioContext.currentTime) * 1000}`);
+                        }, Math.max(0, (noteParams.time - audioContext.currentTime) * 1000));
+                    }
+
+                    track.instrument.play(noteParams);
                 }
-                if (loop.mute) {
-                    return;
-                }
-
-                const stepParams = {...loop.seq[currentNote]};
-
-                stepParams.time = grid.getStepTime((loop.length * currentLoop) + stepParams.step);
-
-                if (!!stepParams.hold) {
-                    stepParams.hold = stepParams.hold * grid.stepLength();
-                }
-
-                if (!!stepParams.callback) {
-                    setTimeout(() => {
-                        stepParams.callback();
-                        //console.log(`time difference: ${(stepParams.time - audioContext.currentTime) * 1000}`);
-                    }, Math.max(0, (stepParams.time - audioContext.currentTime) * 1000));
-                }
-
-                loop.instrument.play(stepParams);
+                track.nextNote();
             }
 
             function getNextNoteTime(){
-                let next = currentNote + 1;
-                let l = currentLoop;
-                if (next >= loop.seq.length){
-                    next = 0;
-                    l++;
-                }
-
-                return grid.getStepTime((loop.length * l) + loop.seq[next].step);
+                const noteParams = track.getCurrentNoteParams();
+                return grid.getStepTime(noteParams.step);
             }
 
             return {
@@ -123,7 +131,7 @@ function createAudio() {
             }
         }
 
-        const loopSchedulers = loops.map(loop => loopScheduler(loop));
+        const trackSchedulers = tracks.map(track => trackScheduler(track));
 
         let timerId = null;
 
@@ -134,7 +142,7 @@ function createAudio() {
             start: () => {
                 timerId = setInterval(() => {
                     grid.update();
-                    loopSchedulers.forEach(w => w.schedule());
+                    trackSchedulers.forEach(scheduler => scheduler.schedule());
                 }, lookahead);
             },
             setBPM: (newBPM) => {
@@ -153,6 +161,89 @@ function createAudio() {
         param.setValueAtTime(volume, time + hold);
         param.exponentialRampToValueAtTime(0.0001, time + hold + release);
         param.setValueAtTime(0.0001, time + hold + release);
+    }
+
+    function createSaw(audioContext) {
+        const osc = audioContext.createOscillator();
+        osc.type = "sawtooth";
+        osc.start(0);
+        return osc;
+    }
+
+    function createSynthInstrument(audioContext) {
+
+        function createVoice(audioContext) {
+            const osc1 = createSaw(audioContext);
+            const osc2 = createSaw(audioContext);
+            const osc3 = createSaw(audioContext);
+
+            osc2.detune.setValueAtTime(1200, audioContext.currentTime);
+            osc3.detune.setValueAtTime(1900, audioContext.currentTime);
+
+            osc1.frequency.value = 0;
+            osc2.frequency.value = 0;
+            osc3.frequency.value = 0;
+
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+
+            osc1.connect(gainNode);
+            osc2.connect(gainNode);
+            osc3.connect(gainNode);
+
+            const oscFreqControl = audioContext.createConstantSource();
+            oscFreqControl.start(audioContext.currentTime);
+            oscFreqControl.connect(osc1.frequency);
+            oscFreqControl.connect(osc2.frequency);
+            oscFreqControl.connect(osc3.frequency);
+
+            return {
+                oscFreq: oscFreqControl.offset,
+                gain: gainNode.gain,
+                connect: (destination) => { gainNode.connect(destination); },
+            }
+        }
+
+        var filter = audioContext.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(22000, audioContext.currentTime);
+        filter.Q.value = 15;
+
+        const gainNode = audioContext.createGain();
+        //gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        filter.connect(gainNode);
+
+        const voices = [];
+        for (let i = 0; i < 8; i++) {
+            const voice = createVoice(audioContext);
+            voice.connect(filter);
+            voices.push(voice);
+        }
+
+        let currentVoice = -1;
+
+        return {
+            play: (params) => {
+                const volume = 0.1;
+                const attack = 0.01;
+                const release = 1;
+
+                currentVoice++;
+                if (currentVoice >= voices.length) {
+                    currentVoice = 0;
+                }
+
+                voices[currentVoice].oscFreq.cancelScheduledValues(params.time);
+                voices[currentVoice].oscFreq.setValueAtTime(params.freq(), params.time);
+                envelope(voices[currentVoice].gain, params.time, volume, attack, params.hold, release);
+            },
+            setFrequency: (freq) => {
+                filter.frequency.linearRampToValueAtTime(freq, audioContext.currentTime + 0.1);
+            },
+            connect: (destination) => {
+                gainNode.connect(destination);
+            }
+        }
     }
 
     function createPulse(ctx) {
@@ -194,19 +285,30 @@ function createAudio() {
         scale: majorScale(freqencyOffset),
     };
 
-    const pulse = {
+    const pulse = createLoopTrack(createPulse(ctx), {
         length: 16,
-        seq: [
+        pattern: [
             {step: 0, freq: () => state.scale[state.pulse.frequency], callback: () => state.pulse.checkCallback()},
             {step: 8, freq: () => state.scale[0], callback: () => state.pulse.playerCallback()},
         ],
-        instrument: createPulse(ctx),
-    };
+    });
     pulse.instrument.connect(master);
 
+    const arp = createLoopTrack(createSynthInstrument(ctx), {
+        length: 8,
+        pattern: [
+            {step: 0, freq: () => state.scale[0], hold: 2},
+            {step: 2, freq: () => state.scale[2], hold: 2},
+            {step: 4, freq: () => state.scale[4], hold: 2},
+            {step: 6, freq: () => state.scale[7], hold: 2},
+        ],
+    });
+    arp.instrument.setFrequency(5000);
+    arp.instrument.connect(master);
 
-    const s = scheduler(ctx, [pulse]);
-    //s.setBPM(180);
+
+    const s = scheduler(ctx, [pulse, arp]);
+    s.setBPM(170);
     s.start();
 
     return {
