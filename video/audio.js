@@ -252,8 +252,11 @@ function createAudio() {
 
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-
         osc.connect(gain);
+
+        const outVolume = ctx.createGain();
+        outVolume.gain.value = 0.3;
+        gain.connect(outVolume);
 
         return {
             play: (params) => {
@@ -262,7 +265,7 @@ function createAudio() {
                 envelope(gain.gain, ctx.currentTime, 1, 0.01, 0.3, 0.5);
             },
             connect: (destination) => {
-                gain.connect(destination);
+                outVolume.connect(destination);
             },
         }
     }
@@ -270,7 +273,7 @@ function createAudio() {
     const ctx = new AudioContext();
     const conv = createMidiToFreqConverter();
     const master = ctx.createGain();
-    master.gain.value = 0.3;
+    master.gain.value = 0.5;
     master.connect(ctx.destination);
 
     const freqencyOffset = 60;
@@ -294,15 +297,43 @@ function createAudio() {
     });
     pulse.instrument.connect(master);
 
-    const arp = createLoopTrack(createSynthInstrument(ctx), {
-        length: 8,
-        pattern: [
-            {step: 0, freq: () => state.scale[0], hold: 2},
-            {step: 2, freq: () => state.scale[2], hold: 2},
-            {step: 4, freq: () => state.scale[4], hold: 2},
-            {step: 6, freq: () => state.scale[7], hold: 2},
-        ],
-    });
+    const arp = (function() {
+        const steps = [0, 2, 4, 6];
+        let stepsIndex = 0;
+        let stepsLoopCounter = 0;
+
+        const chord = [0, 2, 4, 7];
+        let chordIndex = 0;
+
+        const progression = [0, 0, 0, 0, -3, -3, -3, -3, 4, 4, 2, 2];
+        let progressionIndex = 0;
+
+        return {
+            instrument: createSynthInstrument(ctx),
+            getCurrentNoteParams: () => {
+                return {
+                    step: (8 * stepsLoopCounter) + steps[stepsIndex],
+                    freq: () => state.scale[chord[chordIndex] + progression[progressionIndex] - 14],
+                    hold: 2
+                };
+            },
+            nextNote: () => {
+                stepsIndex++;
+                if (stepsIndex >= steps.length) {
+                    stepsLoopCounter++;
+                    stepsIndex = 0;
+                }
+                chordIndex++;
+                if (chordIndex >= chord.length) {
+                    chordIndex = 0;
+                    progressionIndex++;
+                    if (progressionIndex >= progression.length) {
+                        progressionIndex = 0;
+                    }
+                }
+            },
+        };
+    })();
     arp.instrument.setFrequency(5000);
     arp.instrument.connect(master);
 
