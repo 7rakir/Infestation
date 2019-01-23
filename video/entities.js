@@ -3,13 +3,13 @@ class SineEntity {
     this.drawer = drawer;
     this.sine = sine;
     this.headX = 0;
-    this.incrementX = 0.3;
+    this.incrementX = 0.1;
     this.color = color;
   }
 
   draw() {
     this.drawer.drawSineTail(this.sine, this.headX, this.color);
-    this.drawer.drawSineHead(this.sine, this.headX, this.color, this.pulsing && this.pulsing.progress);
+    this.drawer.drawSineHead(this.sine, this.headX, this.color, this.pulsing && this.pulsing.moving && this.pulsing.progress);
   }
 
   update(timeSinceLastFrame) {
@@ -18,8 +18,8 @@ class SineEntity {
   }
 
   startPulse() {
-    //TODO: I broke the visual pulsation and I don't know how
-    this.pulsing = new DurationAnimation(2000);
+    this.pulsing = new DurationAnimation(500, 500/2);
+    this.pulsing.startMoving();
   }
 }
 

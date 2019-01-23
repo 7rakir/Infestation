@@ -120,17 +120,23 @@ class LengthAnimation extends Animation {
 }
 
 class DurationAnimation extends Animation {
-  constructor(finalDuration, onExpire) {
+  constructor(finalDuration, offset, onExpire) {
     super(onExpire);
-    this.finalDuration = finalDuration;
+    this.finalDuration = finalDuration + offset;
+    this.adjustment = Math.pow(10, 18);
+    this.current = offset;
   }
 
   get progress() {
-    return this.progressFunction(this.current / this.finalDuration);
+    const adjustedCurrent = Math.max(this.current, 0);
+    return this.progressFunction(adjustedCurrent / this.finalDuration);
   }
 
   progressFunction(timeFraction) {
-    return Math.pow(timeFraction, 30)
+    const base = Math.pow(timeFraction, 2) - timeFraction;
+    const pulse = Math.pow(base, 30);
+    
+    return this.adjustment * pulse;
   }
 
   start() {
