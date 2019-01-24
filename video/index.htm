@@ -139,6 +139,18 @@
       text-align: center;
       vertical-align: middle;
     }
+
+    button.kill {
+      top: 0;
+      left: 0;
+      position: absolute;
+    }
+
+    button.clear {
+      top: 0;
+      left: 50px;
+      position: absolute;
+    }
   </style>
 </head>
 
@@ -146,6 +158,8 @@
   <img src="gwgc201819_overlay.png" class="overlay" />
 
   <main>
+    <button id="kill" class="kill">kill</button>
+    <button id="clear" class="clear">clear</button>
     <button id="top" class="direction top">
       <svg width="40px" height="180px">
         <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />

@@ -19,6 +19,9 @@ class CameraScreen {
 
     this.currentAlienEntities = [];
 
+    const killButton = new Input("kill");
+    killButton.onClick = () => this.battlefield.killCurrentAliens();
+
     window.requestAnimationFrame(this.renderer.draw);
   }
 
@@ -212,6 +215,13 @@ class Battlefield {
       return this.grid.getTile(newX, newY);
     }
     return null;
+  }
+
+  killCurrentAliens() {
+    this.currentTile.aliens.forEach(alien => {
+      this.onAlienDeath(alien);
+      this.currentTile.removeAlien(alien);
+    })
   }
 }
 
