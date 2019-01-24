@@ -431,8 +431,8 @@ function createAudio() {
     const pulse = createLoopTrack(createPulse(ctx), {
         length: 32,
         pattern: [
-            {step: 0, freq: () => state.scale[0], callback: () => state.pulse.playerCallback()},
-            {step: 16, freq: () => state.scale[state.pulse.frequency], callback: () => state.pulse.checkCallback()},
+            {step: 0, freq: () => state.scale[state.pulse.frequency], callback: () => state.pulse.playerCallback()},
+            {step: 16, freq: () => state.scale[0], callback: () => state.pulse.checkCallback()},
         ],
     });
     pulse.instrument.connect(preGain);
