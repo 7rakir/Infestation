@@ -162,3 +162,11 @@ class DurationAnimation extends Animation {
     }
   }
 }
+
+function negativeModulo(value, modulo) {
+  return ((value % modulo) + modulo) % modulo;
+}
+
+function random(min, max, step = 1) {
+  return min + (step * Math.floor(Math.random() * (max - min + 1) / step));
+}

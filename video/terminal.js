@@ -120,7 +120,3 @@ class Terminal {
     }
   }
 }
-
-function random(min, max, step = 1) {
-  return min + (step * Math.floor(Math.random() * (max - min + 1) / step));
-}

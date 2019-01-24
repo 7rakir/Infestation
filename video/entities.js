@@ -126,8 +126,8 @@ class WallsEntity {
 
   updateWall(wall, increment) {
     const screen = 2 * wall.max - 4 * this.spacing;
-    wall.x = (((wall.x + increment.x) % screen) + screen) % screen;
-    wall.y = (((wall.y + increment.y) % screen) + screen) % screen;
+    wall.x = negativeModulo(wall.x + increment.x, screen);
+    wall.y = negativeModulo(wall.y + increment.y, screen);
   }
 
   drawHorizontalWall(wall) {

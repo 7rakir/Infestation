@@ -52,8 +52,12 @@ class Input {
     return parseInt(this.element.step);
   }
 
-  change(change) {
-    this.element.value = this.value + change * this.step;
+  change(change, overflow = false) {
+    var value = this.value + change * this.step;
+    if(overflow) {
+      value = negativeModulo(value - this.min, this.max - this.min + 1) + this.min;
+    }
+    this.element.value = value;
     this.element.dispatchEvent(new Event("change"));
   }
 }
@@ -65,10 +69,10 @@ function onKeyDown(event) {
 
   switch (keyCode) {
     case 97:  // num1
-      offsetInput.change(-1);
+      offsetInput.change(-1, true);
       break;
     case 98:  // num2
-      offsetInput.change(+1);;
+      offsetInput.change(+1, true);
       break;
     case 100: // num4
       amplitudeInput.change(-1);
