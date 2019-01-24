@@ -10,14 +10,18 @@ class Game {
 
   start() {
     this.audio = createAudio();
-    this.camera = new CameraScreen(this.onSectorClear.bind(this), this.onGameOver.bind(this), this.onSquadArrive.bind(this));
     this.terminal = new Terminal(this.onSync.bind(this), this.audio);
+    this.camera = new CameraScreen(this.onSectorClear.bind(this), this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
 
     const clearButton = new Input("clear");
     clearButton.onClick = () => this.camera.controls.unlockMoving();
   }
 
   onSectorClear() {}
+
+  onSquadLeave() {
+    this.terminal.disableTerminal();
+  }
 
   onSquadArrive() {
     this.terminal.initializeSines();

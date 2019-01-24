@@ -86,6 +86,10 @@
       -webkit-appearance: none;
       margin-top: -12px;
     }
+
+    input[type=range]:disabled {
+      display: none;
+    }
   </style>
 
   <style>
@@ -186,9 +190,9 @@
   </main>
 
   <aside>
-    <canvas id="terminal" width="720" height="401"></canvas>
+    <canvas id="terminal" width="720" height="400"></canvas>
     <div class="controls">
-      <input id="frequency" type="range" min="0" max="14" step="1" /> <!-- TODO: For audio processing I need numbers from 0 with step 1 -->
+      <input id="frequency" type="range" min="0" max="14" step="1" />
       <input id="amplitude" type="range" min="20" max="180" step="10" />
       <input id="offset" type="range" min="-10" max="10" step="1" />
     </div>

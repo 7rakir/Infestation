@@ -1,7 +1,8 @@
 class CameraScreen {
-  constructor(onSectorClear, onGameOver, onSquadArrive) {
+  constructor(onSectorClear, onGameOver, onSquadLeave, onSquadArrive) {
     this.onSectorClear = onSectorClear;
     this.onGameOver = onGameOver;
+    this.onSquadLeave = onSquadLeave;
     this.onSquadArrive = onSquadArrive;
 
     this.drawer = new CanvasDrawer("camera");
@@ -34,6 +35,7 @@ class CameraScreen {
     });
     const targetTile = this.battlefield.getAdjacentTile(dx, dy);
     this.battlefield.moveSquad(targetTile);
+    this.onSquadLeave();
   }
 
   squadArrive() {

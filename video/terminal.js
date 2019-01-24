@@ -30,7 +30,9 @@ class Terminal {
     this.onSync = onSync;
     this.audio = audio;
 
-    const drawer = new CanvasDrawer("terminal");
+    this.drawer = new CanvasDrawer("terminal");
+
+    this.renderer = new Renderer(this.drawer);
 
     frequencyInput = new Input("frequency");
     frequencyInput.onChange = this.frequencyChanged.bind(this);
@@ -42,20 +44,16 @@ class Terminal {
     this.currentSine = new Sine();
     this.checkSine = new Sine();
 
+    this.gridEntity = new GridEntity(this.drawer, this.checkSine);
+
+    this.currentSineEntity = new SineEntity(this.drawer, this.currentSine, new Color(255, 0, 0));
+    this.checkSineEntity = new SineEntity(this.drawer, this.checkSine, new Color(0, 255, 0, 0.3));
     this.initializeSines();
 
-    const renderer = new Renderer(drawer);
+    this.audio.pulse.setPlayerCallback(this.currentSineEntity.startPulse.bind(this.currentSineEntity));
+    this.audio.pulse.setCheckCallback(this.checkSineEntity.startPulse.bind(this.checkSineEntity));
 
-    renderer.addEntity(new GridEntity(drawer, this.checkSine));
-
-    const currentSineEntity = new SineEntity(drawer, this.currentSine, new Color(255, 0, 0));
-    renderer.addEntity(currentSineEntity);
-    audio.pulse.setPlayerCallback(currentSineEntity.startPulse.bind(currentSineEntity)); //TODO: these bind calls feels wrong
-    const checkSineEntity = new SineEntity(drawer, this.checkSine, new Color(0, 255, 0, 0.3));
-    renderer.addEntity(checkSineEntity);
-    audio.pulse.setCheckCallback(checkSineEntity.startPulse.bind(checkSineEntity));
-
-    window.requestAnimationFrame(renderer.draw);
+    window.requestAnimationFrame(this.renderer.draw);
   }
 
   initializeSines() {
@@ -76,6 +74,22 @@ class Terminal {
     this.checkSine.frequencyMultiplier = randomFrequency;
     this.checkSine.offsetX = randomOffset;
     this.audio.pulse.setCheckFrequency(randomFrequency);
+
+    this.renderer.addEntity(this.gridEntity);
+    this.renderer.addEntity(this.currentSineEntity);
+    this.renderer.addEntity(this.checkSineEntity);
+    frequencyInput.disabled = false;
+    amplitudeInput.disabled = false;
+    offsetInput.disabled = false;
+  }
+
+  disableTerminal() {
+    this.renderer.removeEntity(this.gridEntity);
+    this.renderer.removeEntity(this.currentSineEntity);
+    this.renderer.removeEntity(this.checkSineEntity);
+    frequencyInput.disabled = true;
+    amplitudeInput.disabled = true;
+    offsetInput.disabled = true;
   }
 
   frequencyChanged() {
