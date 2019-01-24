@@ -23,12 +23,18 @@
         #000501 5px,
         #000501 10px
       );
+      width: 1920px;
+      height: 1080px;
+      margin: 0;
+      overflow: hidden;
     }
 
     main {
-      width: 870px;
-      height: 652px;
-      position: relative;
+      width: 1024px;
+      height: 768px;
+      position: absolute;
+      top: 183px;
+      left: 61px;
     }
 
     main canvas {
@@ -38,6 +44,9 @@
     aside {
       width: 720px;
       height: 480px;
+      position: absolute;
+      top: 75px;
+      left: 1137px;
     }
 
     .controls {
@@ -45,6 +54,14 @@
       flex-flow: row wrap;
       justify-content: space-around;
       padding: 35px 50px;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      pointer-events: none;
     }
   </style>
 
@@ -126,6 +143,7 @@
 </head>
 
 <body>
+  <img src="gwgc201819_overlay.png" class="overlay" />
 
   <main>
     <button id="top" class="direction top">
@@ -149,7 +167,7 @@
       </svg>
     </button>
     <div id="start">CLICK TO START</div>
-    <canvas id="camera" width="790" height="572"></canvas>
+    <canvas id="camera" width="944" height="688"></canvas>
 
   </main>
 
