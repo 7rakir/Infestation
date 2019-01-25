@@ -46,6 +46,10 @@ function createAudio() {
                     currentLoop++;
                 }
             },
+            reset: () => {
+                currentLoop = 0;
+                currentNote = 0;
+            },
         }
     }
 
@@ -61,6 +65,10 @@ function createAudio() {
             }
 
             return {
+                reset: () => {
+                    currentStep = 0;
+                    currentTime = audioContext.currentTime;
+                },
                 getStepTime: (step) => {
                     const diff = step - currentStep;
                     return currentTime + (diff * stepLength());
@@ -133,6 +141,8 @@ function createAudio() {
                 clearInterval(timerId);
             },
             start: () => {
+                grid.reset();
+                tracks.forEach(track => track.reset());
                 timerId = setInterval(() => {
                     grid.update();
                     trackSchedulers.forEach(scheduler => scheduler.schedule());
@@ -423,6 +433,7 @@ function createAudio() {
             playerCallback: () => {},
             checkCallback: () => {},
             frequency: 0,
+            note: 0,
         },
         root: freqencyOffset,
         scale: majorScale(freqencyOffset),
@@ -431,7 +442,7 @@ function createAudio() {
     const pulse = createLoopTrack(createPulse(ctx), {
         length: 32,
         pattern: [
-            {step: 0, freq: () => state.scale[state.pulse.frequency], callback: () => state.pulse.playerCallback()},
+            {step: 0, freq: () => state.scale[state.pulse.note], callback: () => state.pulse.playerCallback()},
             {step: 16, freq: () => state.scale[0], callback: () => state.pulse.checkCallback()},
         ],
     });
@@ -471,6 +482,11 @@ function createAudio() {
                         progressionIndex = 0;
                     }
                 }
+            },
+            reset: () => {
+                stepsLoopCounter = 0;
+                chordIndex = 0;
+                progressionIndex = 0;
             },
         };
     })();
@@ -513,6 +529,11 @@ function createAudio() {
                     }
                 }
             },
+            reset: () => {
+                stepsLoopCounter = 0;
+                chordIndex = 0;
+                progressionIndex = 0;
+            },
         };
     })();
     bass.instrument.setFrequency(880);
@@ -548,17 +569,8 @@ function createAudio() {
 
     const s = scheduler(ctx, [pulse, arp, kick, snare, bass, hihat]);
 
-    let bpm = 155;
-    s.setBPM(bpm);
-    const speedUpTimer = setInterval(() => {
-        if (bpm >= 185) {
-            clearInterval(speedUpTimer);
-        }
-        bpm++;
-        s.setBPM(bpm);
-    }, 700);
-
-    s.start();
+    const initialBpm = 155;
+    let speedUpTimer = null;
 
     return {
         pulse: {
@@ -569,12 +581,48 @@ function createAudio() {
                 state.pulse.checkCallback = func;
             },
             setPlayerFrequency: (freq) => {
-                state.pulse.frequency =  freq - (state.root - freqencyOffset);
+                state.pulse.frequency = freq;
+                state.pulse.note =  freq - (state.root - freqencyOffset);
             },
             setCheckFrequency: (freq) => {
                 state.root = freqencyOffset + freq;
                 state.scale = majorScale(state.root);
+                state.pulse.note =  state.pulse.frequency - (state.root - freqencyOffset);
             },
+        },
+        unlocked: () => {
+            //TODO: Play success sound
+        },
+        squadEnteringSector: () => {
+            if (speedUpTimer == null) {
+                let bpm = initialBpm;
+                s.setBPM(bpm);
+                speedUpTimer = setInterval(() => {
+                    if (bpm >= 185) {
+                        clearInterval(speedUpTimer);
+                        speedUpTimer = null;
+                    }
+                    bpm++;
+                    s.setBPM(bpm);
+                }, 700);
+            }
+            s.start();
+        },
+        squadLeavingSector: () => {
+            s.stop();
+            if (speedUpTimer != null) {
+                clearInterval(speedUpTimer);
+                speedUpTimer = null;
+            }
+        },
+        fire: () => {
+            //TODO: Play pewpewpew sound
+        },
+        marineDied: () => {
+            //TODO: Play marine dead sound
+        },
+        alienDied: () => {
+            //TODO: Play alien dead sound
         },
     }
 }

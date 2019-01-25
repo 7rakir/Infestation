@@ -21,10 +21,12 @@ class Game {
 
   onSquadLeave() {
     this.terminal.disableTerminal();
+    this.audio.squadLeavingSector();
   }
 
   onSquadArrive() {
     this.terminal.initializeSines();
+    this.audio.squadEnteringSector();
   }
 
   onGameOver() {}
@@ -142,7 +144,7 @@ class DurationAnimation extends Animation {
   progressFunction(timeFraction) {
     const base = Math.pow(timeFraction, 2) - timeFraction;
     const pulse = Math.pow(base, 30);
-    
+
     return this.adjustment * pulse;
   }
 
