@@ -75,7 +75,7 @@ class SquadControls {
   constructor(battlefield, onSquadLeave) {
     this.battlefield = battlefield;
     this.onSquadLeave = onSquadLeave;
-    this.movingLocked = false;
+    this.movingLocked = true;
     topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
     topInput.hidden = false;
     leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
