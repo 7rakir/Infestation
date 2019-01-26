@@ -69,6 +69,10 @@ class Input {
     this.element.value = value;
     this.element.dispatchEvent(new Event("change"));
   }
+
+  click() {
+    this.element.click();
+  }
 }
 
 document.addEventListener("keydown", onKeyDown, false);
@@ -94,6 +98,18 @@ function onKeyDown(event) {
       break;
     case 104: // num8
       frequencyInput.change(+1);
+      break;
+    case 65:  // a
+      leftInput.click();
+      break;
+    case 68:  // d
+      rightInput.click();
+      break;
+    case 83:  // s
+      bottomInput.click();
+      break;
+    case 87:  // w
+      topInput.click();
       break;
   }
 }

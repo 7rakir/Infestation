@@ -64,6 +64,10 @@
       pointer-events: none;
     }
 
+    input[type=range], button:enabled svg {
+      filter: drop-shadow( 0 0 3px #14911A);
+    }
+
     .text {
       text-transform: uppercase;
       color: rgb(23, 172, 30);
@@ -101,9 +105,8 @@
     }
 
     input[type=range]::-webkit-slider-thumb {
-      border: 3px solid #000000;
       height: 31px;
-      width: 14px;
+      width: 10px;
       background: #14911A;
       -webkit-appearance: none;
       margin-top: -12px;
