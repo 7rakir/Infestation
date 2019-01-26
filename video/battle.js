@@ -75,9 +75,13 @@ class SquadControls {
     this.onSquadLeave = onSquadLeave;
     this.movingLocked = false;
     topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
+    topInput.hidden = false;
     leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
+    leftInput.hidden = false;
     rightInput = this.registerDirectionInput("right", this.moveSquad.bind(this), 1, 0);
+    rightInput.hidden = false;
     bottomInput = this.registerDirectionInput("bottom", this.moveSquad.bind(this), 0, 1);
+    bottomInput.hidden = false;
     this.updateAvailability();
   }
 

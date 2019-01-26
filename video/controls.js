@@ -33,6 +33,13 @@ class Input {
     this.element.disabled = disabled;
   }
 
+  get hidden() {
+    return this.element.disabled;
+  }
+  set hidden(hidden) {
+    this.element.hidden = hidden;
+  }
+
   get value() {
     return parseInt(this.element.value);
   }

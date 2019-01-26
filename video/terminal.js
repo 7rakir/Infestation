@@ -78,18 +78,18 @@ class Terminal {
     this.renderer.addEntity(this.gridEntity);
     this.renderer.addEntity(this.currentSineEntity);
     this.renderer.addEntity(this.checkSineEntity);
-    frequencyInput.disabled = false;
-    amplitudeInput.disabled = false;
-    offsetInput.disabled = false;
+    frequencyInput.hidden = false;
+    amplitudeInput.hidden = false;
+    offsetInput.hidden = false;
   }
 
   disableTerminal() {
     this.renderer.removeEntity(this.gridEntity);
     this.renderer.removeEntity(this.currentSineEntity);
     this.renderer.removeEntity(this.checkSineEntity);
-    frequencyInput.disabled = true;
-    amplitudeInput.disabled = true;
-    offsetInput.disabled = true;
+    frequencyInput.hidden = true;
+    amplitudeInput.hidden = true;
+    offsetInput.hidden = true;
   }
 
   frequencyChanged() {

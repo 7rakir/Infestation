@@ -86,10 +86,6 @@
       -webkit-appearance: none;
       margin-top: -12px;
     }
-
-    input[type=range]:disabled {
-      display: none;
-    }
   </style>
 
   <style>
@@ -164,24 +160,24 @@
   <main>
     <button id="kill" class="kill">kill</button>
     <button id="clear" class="clear">clear</button>
-    <button id="top" class="direction top">
+    <button id="top" class="direction top" hidden>
       <svg width="40px" height="180px">
-        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
-    <button id="left" class="direction left">
+    <button id="left" class="direction left" hidden>
       <svg width="40px" height="180px">
-        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
-    <button id="right" class="direction right">
+    <button id="right" class="direction right" hidden>
       <svg width="40px" height="180px">
-        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
-    <button id="bottom" class="direction bottom">
+    <button id="bottom" class="direction bottom" hidden>
       <svg width="40px" height="180px">
-        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848 " />
+        <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
     <div id="start">CLICK TO START</div>
@@ -192,9 +188,9 @@
   <aside>
     <canvas id="terminal" width="720" height="400"></canvas>
     <div class="controls">
-      <input id="frequency" type="range" min="0" max="14" step="1" disabled />
-      <input id="amplitude" type="range" min="20" max="180" step="10" disabled />
-      <input id="offset" type="range" min="-10" max="10" step="1" disabled />
+      <input id="frequency" type="range" min="0" max="14" step="1" hidden />
+      <input id="amplitude" type="range" min="20" max="180" step="10" hidden />
+      <input id="offset" type="range" min="-10" max="10" step="1" hidden />
     </div>
   </aside>
 
