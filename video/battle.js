@@ -23,6 +23,8 @@ class CameraScreen {
     const killButton = new Input("kill");
     killButton.onClick = () => this.battlefield.killCurrentAliens();
 
+    this.squadArrive();
+
     window.requestAnimationFrame(this.renderer.draw);
   }
 
