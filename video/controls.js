@@ -7,6 +7,8 @@ var leftInput;
 var rightInput;
 var bottomInput;
 
+var cameraText;
+
 class Input {
   constructor(id) {
     this.element = document.getElementById(id);

@@ -1,12 +1,13 @@
 class CameraScreen {
-  constructor(onSectorClear, onGameOver, onSquadLeave, onSquadArrive) {
-    this.onSectorClear = onSectorClear;
+  constructor(onGameOver, onSquadLeave, onSquadArrive) {
     this.onGameOver = onGameOver;
     this.onSquadLeave = onSquadLeave;
     this.onSquadArrive = onSquadArrive;
 
+    const finalTileCoordinates = { x: 4, y: 4};
+
     this.drawer = new CanvasDrawer("camera");
-    this.battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this), this.onBattleEnd.bind(this));
+    this.battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this), finalTileCoordinates);
     this.controls = new SquadControls(this.battlefield, this.squadLeave.bind(this));
 
     this.renderer = new Renderer(this.drawer);
@@ -19,6 +20,8 @@ class CameraScreen {
     });
 
     this.currentAlienEntities = [];
+
+    this.finalTile = this.battlefield.grid.getTile(finalTileCoordinates.x, finalTileCoordinates.y);
 
     const killButton = new Input("kill");
     killButton.onClick = () => this.battlefield.killCurrentAliens();
@@ -49,25 +52,32 @@ class CameraScreen {
     this.currentAlienEntities.forEach(alienEntity => this.renderer.addEntity(alienEntity));
 
     console.log("entering " + currentTile.x + "," + currentTile.y);
-    this.battlefield.doBattle();
-    this.onSquadArrive();
+    if(this.finalTile === currentTile) {
+      this.onGameOver(true);
+    }
+    else {
+      this.battlefield.doBattle();
+      this.onSquadArrive();
+    }
   }
 
   onMarineDeath(marine) {
     this.renderer.removeEntityWhere(marineEntity => marineEntity.marine == marine);
+    if(this.battlefield.squad.marines.length === 0) {
+      this.onGameOver(false);
+    }
   }
 
   onAlienDeath(alien) {
     this.renderer.removeEntityWhere(alienEntity => alienEntity.alien == alien);
   }
 
-  onBattleEnd(sectorClear) {
-    if(sectorClear) {
-      this.onSectorClear();
-    }
-    else {
-      this.onGameOver();
-    }
+  disableCamera() {
+    topInput.hidden = true;
+    leftInput.hidden = true;
+    rightInput.hidden = true;
+    bottomInput.hidden = true;
+    this.renderer.stop();
   }
 }
 
@@ -121,13 +131,18 @@ class SquadControls {
 }
 
 class Battlefield {
-  constructor(onMarineDeath, onAlienDeath, onBattleEnd) {
+  constructor(onMarineDeath, onAlienDeath, finalTileCoordinates) {
     this.onMarineDeath = onMarineDeath;
     this.onAlienDeath = onAlienDeath;
-    this.onBattleEnd = onBattleEnd;
 
     this.grid = new Grid(5);
-    this.squad = new Squad(this.grid.getTile(0, 0), 4);
+
+    const startingTile = this.grid.getTile(0, 0);
+    this.grid.clearTile(startingTile);
+    const finalTile = this.grid.getTile(finalTileCoordinates.x, finalTileCoordinates.y);
+    this.grid.clearTile(finalTile);
+
+    this.squad = new Squad(startingTile, 4);
 
     this.squadAttacks = this.squadAttacks.bind(this);
     this.aliensAttack = this.aliensAttack.bind(this);
@@ -147,10 +162,9 @@ class Battlefield {
     this.aliensAttacking = setInterval(this.aliensAttack, 2000);
   }
 
-  leaveBattle(sectorClear) {
+  leaveBattle() {
     this.squadAttacking && clearInterval(this.squadAttacking);
     this.aliensAttacking && clearInterval(this.aliensAttacking);
-    this.onBattleEnd(sectorClear);
   }
 
   squadAttacks() {
@@ -197,8 +211,8 @@ class Battlefield {
     const targetDied = alien.attack(marine);
 
     if (targetDied) {
-      this.onMarineDeath(marine);
       this.squad.removeMarine(marine);
+      this.onMarineDeath(marine);
       console.log("alien killed marine");
     }
   }
@@ -263,12 +277,14 @@ class Grid {
         this.tiles[i][j] = new Tile(j, i, alienCount);
       }
     }
-
-    this.tiles[0][0].aliens = [];
   }
 
   getTile(x, y) {
     return this.tiles[y][x];
+  }
+
+  clearTile(tile) {
+    tile.aliens = [];
   }
 }
 

@@ -19,9 +19,9 @@
       background: repeating-linear-gradient(
         0,
         #000200,
-        #000200 5px,
-        #000501 5px,
-        #000501 10px
+        #000200 10px,
+        #000501 10px,
+        #000501 20px
       );
       width: 1920px;
       height: 1080px;
@@ -73,6 +73,17 @@
       font-weight: 600;
       letter-spacing: 1px;
       line-height: 25px;
+      text-shadow: 0 0 15px rgb(23, 172, 30);
+    }
+
+    @keyframes fadeIn {
+      0% {opacity: 0;}
+      100% {opacity: 1;}
+    }
+         
+    .fadeIn {
+      animation-name: fadeIn;
+      animation-duration: 1s;
     }
   </style>
 
@@ -181,7 +192,7 @@
         <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
-    <div id="start" class="text">
+    <div id="camera-text" class="text fadeIn">
       <p>You and your team noticed that a space station did not respond to your requests about the status near your
         destination at Omicron 6. As is the law, every spaceship has to investigate a potential power or oxygen defect
         when passing any vessel.</p>
@@ -192,12 +203,11 @@
         and is <u>infested by multiple dangerous organisms</u> in every room.</p>
       <p>As the crew's module was damaged due to the fight with several of these organisms, you now have to lead your
         crew to one of the station's escape module on the other side. However, the <u>doors between each room have been
-        closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u>.</p>
+          closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u>.</p>
       <p>Lead your crew to safety before they are overrun.</p>
       <p>Click to proceed &gt;</p>
     </div>
     <canvas id="camera" width="944" height="688"></canvas>
-
   </main>
 
   <aside>

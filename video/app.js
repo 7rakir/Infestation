@@ -2,7 +2,8 @@ class Game {
   constructor() {
     const click = () => {
       window.removeEventListener('click', click);
-      document.getElementById('start').remove();
+      cameraText = document.getElementById('camera-text');
+      cameraText.style.display = "none";
       this.start();
     };
     window.addEventListener('click', click);
@@ -11,13 +12,11 @@ class Game {
   start() {
     this.audio = createAudio();
     this.terminal = new Terminal(this.onSync.bind(this), this.audio);
-    this.camera = new CameraScreen(this.onSectorClear.bind(this), this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
+    this.camera = new CameraScreen(this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
 
     const clearButton = new Input("clear");
     clearButton.onClick = () => this.camera.controls.unlockMoving();
   }
-
-  onSectorClear() {}
 
   onSquadLeave() {
     this.terminal.disableTerminal();
@@ -29,7 +28,18 @@ class Game {
     this.audio.squadEnteringSector();
   }
 
-  onGameOver() {}
+  onGameOver(isPositiveEnding) {
+    this.terminal.disableTerminal();
+    this.camera.disableCamera();
+    cameraText.style.display = "block";
+    if(isPositiveEnding) {
+      cameraText.innerHTML = "<p>Congratulations!</p><p>Your crew have escaped the horrors of the station.</p>";
+    }
+    else {
+      cameraText.innerHTML = "<p>Game over!</p><p>Your crew has been overwhelmed by the organisms at the station.</p>";
+    }
+    console.log("end " + isPositiveEnding);
+  }
 
   onSync(){
     this.camera.controls.unlockMoving();
@@ -45,6 +55,7 @@ class Renderer {
     this.previousTimestamp = 0;
     this.entities = [];
     this.draw = this.draw.bind(this);
+    this.shouldStopDrawing = false;
   }
 
   addEntity(entity) {
@@ -66,6 +77,10 @@ class Renderer {
   draw(timestamp) {
     this.drawer.clear();
 
+    if(this.shouldStopDrawing) {
+      return;
+    }
+
     const progress = timestamp - this.previousTimestamp;
     this.previousTimestamp = timestamp;
 
@@ -75,6 +90,10 @@ class Renderer {
     });
 
     window.requestAnimationFrame(this.draw);
+  }
+
+  stop() {
+    this.shouldStopDrawing = true;
   }
 }
 
