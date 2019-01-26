@@ -63,6 +63,17 @@
       z-index: 1000;
       pointer-events: none;
     }
+
+    .text {
+      text-transform: uppercase;
+      color: rgb(23, 172, 30);
+      font-size: 20px;
+      font-family: 'Courier New', Courier, monospace;
+      margin: 50px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      line-height: 25px;
+    }
   </style>
 
   <style>
@@ -130,16 +141,6 @@
       left: 0;
     }
 
-    div#start {
-      color: #14911A;
-      position: absolute;
-      width: 100%;
-      top: calc(50% - 10px);
-      font-size: 20px;
-      text-align: center;
-      vertical-align: middle;
-    }
-
     button.kill {
       top: 0;
       left: 0;
@@ -180,7 +181,21 @@
         <polyline points="33.33,177.152 6.67,90.002 33.33,2.848" />
       </svg>
     </button>
-    <div id="start">CLICK TO START</div>
+    <div id="start" class="text">
+      <p>You and your team noticed that a space station did not respond to your requests about the status near your
+        destination at Omicron 6. As is the law, every spaceship has to investigate a potential power or oxygen defect
+        when passing any vessel.</p>
+      <p>While you were trying to reach anyone else assuming that the personnel at the station might require help, the
+        rest of your crew approached and docked the station in one of your modules.</p>
+      <p>Shortly after your crew entered the station, all communication went dark. After a while you finally managed to
+        gain access to basic systems of the station. You now see that the station is severely damaged from the inside
+        and is <u>infested by multiple dangerous organisms</u> in every room.</p>
+      <p>As the crew's module was damaged due to the fight with several of these organisms, you now have to lead your
+        crew to one of the station's escape module on the other side. However, the <u>doors between each room have been
+        closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u>.</p>
+      <p>Lead your crew to safety before they are overrun.</p>
+      <p>Click to proceed &gt;</p>
+    </div>
     <canvas id="camera" width="944" height="688"></canvas>
 
   </main>
