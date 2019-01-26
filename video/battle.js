@@ -261,6 +261,8 @@ class Grid {
         this.tiles[i][j] = new Tile(j, i, alienCount);
       }
     }
+
+    this.tiles[0][0].aliens = [];
   }
 
   getTile(x, y) {
