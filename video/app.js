@@ -33,6 +33,7 @@ class Game {
 
   onSync(){
     this.camera.controls.unlockMoving();
+    this.audio.unlocked();
   }
 }
 

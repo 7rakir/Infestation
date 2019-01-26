@@ -410,7 +410,7 @@ function createAudio() {
 
     const ctx = new AudioContext();
     const masterGain = ctx.createGain();
-    masterGain.gain.value = 0.5;
+    masterGain.gain.value = 0.3;
     masterGain.connect(ctx.destination);
 
     var convolver = ctx.createConvolver();
@@ -572,6 +572,9 @@ function createAudio() {
     const initialBpm = 155;
     let speedUpTimer = null;
 
+    // https://stackoverflow.com/questions/21513706
+    window.speechSynthesis.getVoices();
+
     return {
         pulse: {
             setPlayerCallback: (func) => {
@@ -591,7 +594,15 @@ function createAudio() {
             },
         },
         unlocked: () => {
-            //TODO: Play success sound
+            const synth = window.speechSynthesis;
+            var msg = new SpeechSynthesisUtterance();
+            const voice = synth.getVoices().filter(v => v.name == "Google UK English Female")[0];
+            if (!!voice) {
+                msg.voice = voice;
+                msg.pitch = 0.7;
+            }
+            msg.text = "Doors unlocked."
+            synth.speak(msg);
         },
         squadEnteringSector: () => {
             if (speedUpTimer == null) {
