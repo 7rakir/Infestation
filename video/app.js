@@ -169,23 +169,17 @@ class LengthAnimation extends Animation {
 }
 
 class DurationAnimation extends Animation {
-  constructor(finalDuration, offset, onExpire) {
+  constructor(finalDuration, onExpire, progressFunction, offset = 0) {
     super(onExpire);
     this.finalDuration = finalDuration + offset;
-    this.adjustment = Math.pow(10, 18);
+    
     this.current = offset;
+    this.progressFunction = progressFunction;
   }
 
   get progress() {
     const adjustedCurrent = Math.max(this.current, 0);
     return this.progressFunction(adjustedCurrent / this.finalDuration);
-  }
-
-  progressFunction(timeFraction) {
-    const base = Math.pow(timeFraction, 2) - timeFraction;
-    const pulse = Math.pow(base, 30);
-
-    return this.adjustment * pulse;
   }
 
   start() {
@@ -203,6 +197,18 @@ class DurationAnimation extends Animation {
       this.stop();
     }
   }
+}
+
+function pulseProgressFunction(timeFraction) {
+  const adjustment = Math.pow(10, 18);
+  const base = Math.pow(timeFraction, 2) - timeFraction;
+  const pulse = Math.pow(base, 30);
+
+  return adjustment * pulse;
+}
+
+function linearProgressFunction(timeFraction) {
+  return timeFraction;
 }
 
 function negativeModulo(value, modulo) {

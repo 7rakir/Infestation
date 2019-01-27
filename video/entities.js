@@ -18,7 +18,8 @@ class SineEntity {
   }
 
   startPulse() {
-    this.pulsing = new DurationAnimation(500, 500/2);
+    const duration = 500;
+    this.pulsing = new DurationAnimation(duration, null, pulseProgressFunction, duration/2);
     this.pulsing.startMoving();
   }
 }
