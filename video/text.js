@@ -32,7 +32,7 @@ const helpText = `
 
 const tileLockedText = "<p>Signal of the door already synchronized.</p>"
 
-const winningText = "<p>Congratulations!</p><p>Your crew have escaped the horrors of the station.</p>";
+const winningText = "<p>Congratulations!</p><p>Your crew has escaped the horrors of the station.</p>";
 
 const losingText = "<p>Game over!</p><p>Your crew has been overwhelmed by the organisms at the station.</p>";
 
