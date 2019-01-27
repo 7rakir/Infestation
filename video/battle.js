@@ -208,7 +208,7 @@ class Battlefield {
 
   squadAttacks() {
     this.squad.marines.forEach(marine => {
-      const closestAlien = this.getClosestAlien();
+      const closestAlien = this.getClosestAlien(marine);
       if (closestAlien) {
         this.onShot(marine, closestAlien);
       }
@@ -222,7 +222,7 @@ class Battlefield {
 
   aliensAttack() {
     this.currentTile.aliens.forEach(alien => {
-      const closestMarine = this.getClosestMarine();
+      const closestMarine = this.getClosestMarine(alien);
       if (closestMarine) {
         this.onShot(alien, closestMarine);
       }
@@ -258,12 +258,24 @@ class Battlefield {
     }
   }
 
-  getClosestAlien() {
-    return this.currentTile.aliens[0];
+  getClosestAlien(marine) {
+    return this.getClosestIndex(marine, this.currentTile.aliens);
   }
 
-  getClosestMarine() {
-    return this.squad.marines[0];
+  getClosestMarine(alien) {
+    return this.getClosestIndex(alien, this.squad.marines);
+  }
+
+  getClosestIndex(unit, enemies) {
+    const positionDifferences = enemies.map(enemy => Math.abs(unit.position - enemy.position));
+    var index = positionDifferences.findIndex(difference => difference === 0);
+    if(index === -1) {
+      var index = positionDifferences.findIndex(difference => difference === 1 || difference === 3);
+    }
+    if(index === -1) {
+      var index = positionDifferences.findIndex(difference => difference === 2);
+    }
+    return enemies[index];
   }
 
   isAllowed(x, y) {
