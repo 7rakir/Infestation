@@ -32,9 +32,11 @@ class Game {
   }
 
   onGameOver(isPositiveEnding) {
+    this.gameOver = true;
     this.terminal.disableTerminal();
     this.camera.disableCamera();
     cameraText.style.display = "block";
+    document.getElementById('help').style.display = "none";
     if(isPositiveEnding) {
       cameraText.innerHTML = "<p>Congratulations!</p><p>Your crew have escaped the horrors of the station.</p>";
     }
@@ -51,14 +53,14 @@ class Game {
   }
 
   showHelp() {
-    if(this.terminal && terminalText) {
+    if(!this.gameOver && this.terminal && terminalText) {
       this.terminal.disableTerminal();
       terminalText.style.display = "block";
     }
   }
 
   hideHelp() {
-    if(this.terminal && terminalText) {
+    if(!this.gameOver && this.terminal && terminalText) {
       terminalText.style.display = "none";
       this.terminal.enableTerminal();
     }
