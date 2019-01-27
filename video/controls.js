@@ -63,6 +63,9 @@ class Input {
   }
 
   change(change, overflow = false) {
+    if(this.disabled) {
+      return;
+    }
     var value = this.value + change * this.step;
     if(overflow) {
       value = negativeModulo(value - this.min, this.max - this.min + 1) + this.min;

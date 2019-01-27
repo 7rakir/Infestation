@@ -65,8 +65,8 @@
       pointer-events: none;
     }
 
-    input[type=range], button:enabled svg {
-      filter: drop-shadow( 0 0 3px #14911A);
+    input[type=range]:enabled, button:enabled svg {
+      filter: drop-shadow(0 0 3px #14911A);
     }
 
     .help {
@@ -125,6 +125,11 @@
       background: #14911A;
       -webkit-appearance: none;
       margin-top: -12px;
+    }
+
+    input[type=range]:disabled::-webkit-slider-runnable-track,
+    input[type=range]:disabled::-webkit-slider-thumb {
+      background: rgb(5, 58, 16);
     }
   </style>
 

@@ -26,6 +26,7 @@ class Game {
   }
 
   onSquadArrive() {
+    this.terminal.enableControls();
     this.terminal.initializeSines();
     this.audio.squadEnteringSector();
   }
@@ -44,6 +45,7 @@ class Game {
   }
 
   onSync(){
+    this.terminal.disableControls();
     this.camera.controls.unlockMoving();
     this.audio.unlocked();
   }

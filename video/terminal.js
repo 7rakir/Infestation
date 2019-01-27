@@ -96,6 +96,18 @@ class Terminal {
     offsetInput.hidden = true;
   }
 
+  disableControls() {
+    frequencyInput.disabled = true;
+    amplitudeInput.disabled = true;
+    offsetInput.disabled = true;
+  }
+
+  enableControls() {
+    frequencyInput.disabled = false;
+    amplitudeInput.disabled = false;
+    offsetInput.disabled = false;
+  }
+
   frequencyChanged() {
     this.currentSine.frequencyMultiplier = frequencyInput.value;
     this.audio.pulse.setPlayerFrequency(frequencyInput.value);
