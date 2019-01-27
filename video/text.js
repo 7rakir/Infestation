@@ -7,10 +7,10 @@ const introductionText = `
   <p>Location: Orbit of Omicron 6<br />
   Date: November 30, 2279</p>
   <p>You and your team noticed that a space station did not respond to your requests about the status near your destination at Omicron 6. As is the law, every spaceship has to investigate a potential power or oxygen defect when passing any vessel.</p>
-  <p>While you were trying to reach anyone else assuming that the personnel at the station might require further help, the rest of your crew approached and docked the station in one of your modules.</p>
-  <p>Shortly after your crew entered the station, all communication went dark. After a while you finally managed to gain access to basic systems of the station. You now see that the station is severely damaged from the inside and is <u>infested by multiple dangerous organisms</u> in every room.</p>
-  <p>As the crew's module was damaged due to the fight with several of these organisms, you now have to lead your crew to one of the station's escape module on the other side. However, the <u>doors between each room have been automatically closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u> for each door.</p>
-  <p>Lead your crew to safety before they are overrun.</p>
+  <p>While you were trying to reach anyone else assuming that the personnel at the station might require further help, the rest of your squad approached and docked the station in one of your modules.</p>
+  <p>Shortly after your squad entered the station, all communication went dark. After a while you finally managed to gain access to basic systems of the station. You now see that the station is severely damaged from the inside and is <u>infested by multiple dangerous organisms</u> in every room.</p>
+  <p>As the squad's module was damaged due to the fight with several of these organisms, you now have to lead your squad to one of the station's escape module on the other side. However, the <u>doors between each room have been automatically closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u> for each door.</p>
+  <p>Lead your squad to safety before they are overrun.</p>
   </br>
   <p>&gt; Click to proceed</p>
 `;
@@ -25,7 +25,7 @@ const helpText = `
     <li>NUM1: left offset</li>
     <li>NUM2: right offset</li>
   </ul>
-  <p>Move your crew by keys:</p>
+  <p>Move your squad by keys:</p>
   <ul>
     <li>W: top</li>
     <li>A: left</li>
@@ -36,9 +36,9 @@ const helpText = `
 
 const tileLockedText = "<p>Signal of the door already synchronized.</p>"
 
-const winningText = "<p>Congratulations!</p><p>Your crew has escaped the horrors of the station.</p>";
+const winningText = "<p>Congratulations!</p><p>Your squad has escaped the horrors of the station.</p>";
 
-const losingText = "<p>Game over!</p><p>Your crew has been overwhelmed by the organisms at the station.</p>";
+const losingText = "<p>Game over!</p><p>Your squad has been overwhelmed by the organisms at the station.</p>";
 
 class TextArea {
   constructor(id) {
