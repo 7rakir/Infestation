@@ -2,10 +2,8 @@ class Game {
   constructor() {
     const click = () => {
       window.removeEventListener('click', click);
-      cameraText = document.getElementById('camera-text');
-      terminalText = document.getElementById('terminal-text');
-      cameraText.style.display = "none";
-      terminalText.style.display = "none";
+      cameraText.hide();
+      terminalText.hide();
       this.start();
     };
     window.addEventListener('click', click);
@@ -15,19 +13,29 @@ class Game {
     this.audio = createAudio();
     this.terminal = new Terminal(this.onSync.bind(this), this.audio);
     this.camera = new CameraScreen(this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
+    this.camera.start();
 
     const clearButton = new Input("clear");
-    clearButton.onClick = () => this.camera.controls.unlockMoving();
+    clearButton.onClick = () => this.onSync();
   }
 
   onSquadLeave() {
     this.terminal.disableTerminal();
+    terminalText.hide();
     this.audio.squadLeavingSector();
   }
 
   onSquadArrive() {
-    this.terminal.enableControls();
-    this.terminal.initializeSines();
+    if(this.camera.battlefield.currentTile.unlocked) {
+      terminalText.addText(tileLockedText);
+      terminalText.show();
+    }
+    else {
+      terminalText.hide();
+      this.terminal.enableControls();
+      this.terminal.initializeSines();
+    }
+    
     this.audio.squadEnteringSector();
   }
 
@@ -35,39 +43,49 @@ class Game {
     this.gameOver = true;
     this.terminal.disableTerminal();
     this.camera.disableCamera();
-    cameraText.style.display = "block";
+    cameraText.addText(isPositiveEnding ? winningText : losingText);
+    cameraText.show();
     document.getElementById('help').style.display = "none";
-    if(isPositiveEnding) {
-      cameraText.innerHTML = "<p>Congratulations!</p><p>Your crew have escaped the horrors of the station.</p>";
-    }
-    else {
-      cameraText.innerHTML = "<p>Game over!</p><p>Your crew has been overwhelmed by the organisms at the station.</p>";
-    }
     console.log("end " + isPositiveEnding);
   }
 
-  onSync(){
+  onSync() {
     this.terminal.disableControls();
-    this.camera.controls.unlockMoving();
+    this.camera.controls.unlockCurrentTile();
     this.audio.unlocked();
   }
 
   showHelp() {
     if(!this.gameOver && this.terminal && terminalText) {
       this.terminal.disableTerminal();
-      terminalText.style.display = "block";
+      terminalText.addText(helpText);
+      terminalText.show();
     }
   }
 
   hideHelp() {
     if(!this.gameOver && this.terminal && terminalText) {
-      terminalText.style.display = "none";
-      this.terminal.enableTerminal();
+      if(this.camera.battlefield.currentTile.unlocked) {
+        terminalText.addText(tileLockedText);
+        terminalText.show();
+      }
+      else {
+        terminalText.hide();
+        this.terminal.enableTerminal();
+      }
     }
   }
 }
 
-const game = new Game();
+var game;
+window.onload = () => {
+  game = new Game();
+  cameraText = new TextArea('camera-text');
+  terminalText = new TextArea('terminal-text');
+
+  cameraText.addText(introductionText);
+  terminalText.addText(helpText);
+}
 
 class Renderer {
   constructor(drawer) {

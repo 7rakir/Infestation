@@ -25,15 +25,16 @@ class CameraScreen {
 
     const killButton = new Input("kill");
     killButton.onClick = () => this.battlefield.killCurrentAliens();
+  }
 
+  start() {
     this.squadArrive();
-
     window.requestAnimationFrame(this.renderer.draw);
   }
 
   squadLeave(dx, dy) {
     console.log("leaving " + this.battlefield.currentTile.x + "," + this.battlefield.currentTile.y);
-    this.controls.lockMoving();
+    this.controls.teamStartedMoving();
     this.walls.move(-dx, -dy, this.squadArrive.bind(this));
     this.currentAlienEntities.forEach(alienEntity => {
       alienEntity.move(-dx, -dy);
@@ -57,6 +58,7 @@ class CameraScreen {
     }
     else {
       this.battlefield.doBattle();
+      this.controls.teamFinishedMoving();
       this.onSquadArrive();
     }
   }
@@ -105,6 +107,7 @@ class SquadControls {
     this.battlefield = battlefield;
     this.onSquadLeave = onSquadLeave;
     this.movingLocked = true;
+    this.teamIsMoving = false;
     topInput = this.registerDirectionInput("top", this.moveSquad.bind(this), 0, -1);
     topInput.hidden = false;
     leftInput = this.registerDirectionInput("left", this.moveSquad.bind(this), -1, 0);
@@ -121,21 +124,37 @@ class SquadControls {
     this.updateAvailability();
   }
 
-  lockMoving() {
-    this.movingLocked = true;
+  teamStartedMoving() {
+    this.teamIsMoving = true;
     this.updateAvailability();
   }
 
-  unlockMoving() {
-    this.movingLocked = false;
+  teamFinishedMoving() {
+    this.teamIsMoving = false;
+    this.updateAvailability();
+  }
+
+  unlockCurrentTile() {
+    this.battlefield.currentTile.unlock();
     this.updateAvailability();
   }
 
   updateAvailability() {
-    topInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(topInput.dx, topInput.dy) === null;
-    leftInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(leftInput.dx, leftInput.dy) === null;
-    rightInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(rightInput.dx, rightInput.dy) === null;
-    bottomInput.disabled = this.movingLocked || this.battlefield.getAdjacentTile(bottomInput.dx, bottomInput.dy) === null;
+    this.updateInputAvailability(topInput);
+    this.updateInputAvailability(leftInput);
+    this.updateInputAvailability(rightInput);
+    this.updateInputAvailability(bottomInput);
+  }
+
+  updateInputAvailability(input) {
+    const targetTile = this.battlefield.getAdjacentTile(input.dx, input.dy);
+    const isTargetPossible = targetTile !== null;
+    const isTargetAlreadyUnlocked = isTargetPossible && targetTile.unlocked;
+    const isCurrentTileUnlocked = this.battlefield.currentTile.unlocked;
+
+    const enabled = !this.teamIsMoving && isTargetPossible && (isTargetAlreadyUnlocked || isCurrentTileUnlocked);
+
+    input.disabled = !enabled;
   }
 
   registerDirectionInput(id, onClick, dx, dy) {
@@ -273,6 +292,7 @@ class Tile {
   constructor(x, y, alienCount) {
     this.x = x;
     this.y = y;
+    this.unlocked = false;
 
     this.aliens = [];
     for (var i = 0; i < alienCount; i++) {
@@ -284,6 +304,10 @@ class Tile {
     this.aliens = this.aliens.filter(function (alien) {
       return alien !== removedAlien;
     });
+  }
+
+  unlock() {
+    this.unlocked = true;
   }
 }
 
