@@ -307,8 +307,16 @@ class Tile {
     this.unlocked = false;
 
     this.aliens = [];
-    for (var i = 0; i < alienCount; i++) {
-      this.aliens.push(new Unit(2, 1, i));
+    this.addAliens(alienCount);
+  }
+
+  addAliens(alienCount) {
+    const possiblePositions = [0, 1, 2, 3];
+    for(var i = 0; i < alienCount; i++) {
+      const randomIndex = random(0, possiblePositions.length - 1);
+      const position = possiblePositions[randomIndex];
+      possiblePositions.splice(randomIndex, 1);
+      this.aliens.push(new Unit(2, 1, position));
     }
   }
 
