@@ -3,7 +3,9 @@ class Game {
     const click = () => {
       window.removeEventListener('click', click);
       cameraText = document.getElementById('camera-text');
+      terminalText = document.getElementById('terminal-text');
       cameraText.style.display = "none";
+      terminalText.style.display = "none";
       this.start();
     };
     window.addEventListener('click', click);
@@ -44,6 +46,20 @@ class Game {
   onSync(){
     this.camera.controls.unlockMoving();
     this.audio.unlocked();
+  }
+
+  showHelp() {
+    if(this.terminal && terminalText) {
+      this.terminal.disableTerminal();
+      terminalText.style.display = "block";
+    }
+  }
+
+  hideHelp() {
+    if(this.terminal && terminalText) {
+      terminalText.style.display = "none";
+      this.terminal.enableTerminal();
+    }
   }
 }
 

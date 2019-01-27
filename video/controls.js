@@ -8,6 +8,7 @@ var rightInput;
 var bottomInput;
 
 var cameraText;
+var terminalText;
 
 class Input {
   constructor(id) {
@@ -76,6 +77,7 @@ class Input {
 }
 
 document.addEventListener("keydown", onKeyDown, false);
+document.addEventListener("keyup", onKeyUp, false);
 
 function onKeyDown(event) {
   var keyCode = event.keyCode;
@@ -111,5 +113,16 @@ function onKeyDown(event) {
     case 87:  // w
       topInput.click();
       break;
+    case 72:  // h
+      game.showHelp();
+      break;
+  }
+}
+
+function onKeyUp(event) {
+  var keyCode = event.keyCode;
+
+  if(keyCode === 72) { // h
+    game.hideHelp();
   }
 }

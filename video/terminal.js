@@ -75,6 +75,10 @@ class Terminal {
     this.checkSine.offsetX = randomOffset;
     this.audio.pulse.setCheckFrequency(randomFrequency);
 
+    this.enableTerminal();
+  }
+
+  enableTerminal() {
     this.renderer.addEntity(this.gridEntity);
     this.renderer.addEntity(this.currentSineEntity);
     this.renderer.addEntity(this.checkSineEntity);
