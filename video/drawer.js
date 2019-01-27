@@ -130,13 +130,20 @@ class CanvasDrawer {
     this.context.stroke();
   }
 
-  drawCircle(x, y, color, radius = 10) {
+  drawCircle(x, y, color, radius = 15) {
     this.context.beginPath();
     this.context.strokeStyle = color.full();
     this.context.arc(x, y, radius, 0, 2 * Math.PI);
     this.context.fillStyle = color.full();
     this.context.fill();
     this.context.stroke();
+  }
+
+  writeText(x, y, text, color) {
+    this.context.font = "bold 18px Courier New";
+    this.context.textAlign = "center";
+    this.context.fillStyle = color.full();
+    this.context.fillText(text, x, y);
   }
 
   clear() {

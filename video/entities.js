@@ -44,7 +44,7 @@ class MarineEntity {
   constructor(drawer, marine) {
     this.drawer = drawer;
     this.unit = marine;
-    this.spacing = 40;
+    this.spacing = 70;
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
@@ -58,6 +58,8 @@ class MarineEntity {
 
   draw() {
     this.drawer.drawCircle(this.x, this.y, this.color);
+    const text = "MARINE " + this.unit.hitpoints + "";
+    this.drawer.writeText(this.x, this.y - 22, text, this.color);
   }
 
   update() { }
@@ -67,7 +69,7 @@ class AlienEntity {
   constructor(drawer, alien) {
     this.drawer = drawer;
     this.unit = alien;
-    this.spacing = 100;
+    this.spacing = 160;
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
@@ -81,6 +83,8 @@ class AlienEntity {
 
   draw() {
     this.drawer.drawCircle(this.x, this.y, this.color);
+    const text = "ALIEN " + this.unit.hitpoints + "";
+    this.drawer.writeText(this.x, this.y - 22, text, this.color);
   }
 
   update(timeSinceLastFrame) {
