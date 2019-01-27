@@ -115,21 +115,25 @@ class CanvasDrawer {
     this.context.lineTo(x2, y2);
   }
 
-  drawMarine(x, y) {
-    var color = new Color(0, 0, 150);
+  drawShot(x1, y1, x2, y2, color, progress) {
+    const grad = this.context.createLinearGradient(x1, y1, x2, y2);
+    grad.addColorStop(0, color.full(0));
+    grad.addColorStop(progress, color.full());
+    grad.addColorStop(1, color.full(0));
+
     this.context.beginPath();
-    this.context.strokeStyle = color.full();
-    this.context.arc(x, y, 10, 0, 2 * Math.PI);
-    this.context.fillStyle = color.full();
-    this.context.fill();
+    this.context.strokeStyle = grad;
+
+    this.context.lineWidth = 2;
+    this.context.moveTo(x1, y1);
+    this.context.lineTo(x2, y2);
     this.context.stroke();
   }
 
-  drawAlien(x, y) {
-    var color = new Color(150, 0, 0);
+  drawCircle(x, y, color, radius = 10) {
     this.context.beginPath();
     this.context.strokeStyle = color.full();
-    this.context.arc(x, y, 10, 0, 2 * Math.PI);
+    this.context.arc(x, y, radius, 0, 2 * Math.PI);
     this.context.fillStyle = color.full();
     this.context.fill();
     this.context.stroke();
@@ -148,7 +152,7 @@ class Color {
     this.alpha = alpha;
   }
 
-  full() {
-    return "rgba(" + this.red + ", " + this.green + ", " + this.blue + ", " + this.alpha + ")";
+  full(alpha = this.alpha) {
+    return "rgba(" + this.red + ", " + this.green + ", " + this.blue + ", " + alpha + ")";
   }
 }

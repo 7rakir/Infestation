@@ -7,7 +7,7 @@ class CameraScreen {
     const finalTileCoordinates = { x: 4, y: 4};
 
     this.drawer = new CanvasDrawer("camera");
-    this.battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this), finalTileCoordinates);
+    this.battlefield = new Battlefield(this.onMarineDeath.bind(this), this.onAlienDeath.bind(this), this.onShot.bind(this), finalTileCoordinates);
     this.controls = new SquadControls(this.battlefield, this.squadLeave.bind(this));
 
     this.renderer = new Renderer(this.drawer);
@@ -62,14 +62,33 @@ class CameraScreen {
   }
 
   onMarineDeath(marine) {
-    this.renderer.removeEntityWhere(marineEntity => marineEntity.marine == marine);
+    this.renderer.removeEntityWhere(marineEntity => marineEntity.unit == marine);
     if(this.battlefield.squad.marines.length === 0) {
       this.onGameOver(false);
     }
   }
 
   onAlienDeath(alien) {
-    this.renderer.removeEntityWhere(alienEntity => alienEntity.alien == alien);
+    this.renderer.removeEntityWhere(alienEntity => alienEntity.unit == alien);
+  }
+
+  onShot(source, target) {
+    const sourceEntity = this.renderer.entities.find(entity => entity.unit === source);
+    const targetEntity = this.renderer.entities.find(entity => entity.unit === target);
+    const shotEntity = new ShotEntity(this.drawer, sourceEntity, targetEntity);
+    this.renderer.addEntity(shotEntity);
+    shotEntity.start(() => this.onShotFinish(shotEntity, sourceEntity, targetEntity));
+  }
+
+  onShotFinish(shotEntity, sourceEntity, targetEntity) {
+    this.renderer.removeEntity(shotEntity);
+
+    if(sourceEntity instanceof AlienEntity) {
+      this.battlefield.resolveAlienAttack(sourceEntity.unit, targetEntity.unit);
+    }
+    else {
+      this.battlefield.resolveMarineAttack(sourceEntity.unit, targetEntity.unit);
+    }
   }
 
   disableCamera() {
@@ -131,9 +150,10 @@ class SquadControls {
 }
 
 class Battlefield {
-  constructor(onMarineDeath, onAlienDeath, finalTileCoordinates) {
+  constructor(onMarineDeath, onAlienDeath, onShot, finalTileCoordinates) {
     this.onMarineDeath = onMarineDeath;
     this.onAlienDeath = onAlienDeath;
+    this.onShot = onShot;
 
     this.grid = new Grid(5);
 
@@ -171,7 +191,7 @@ class Battlefield {
     this.squad.marines.forEach(marine => {
       const closestAlien = this.getClosestAlien();
       if (closestAlien) {
-        this.resolveMarineAttack(marine, closestAlien);
+        this.onShot(marine, closestAlien);
       }
       else {
         this.leaveBattle(true);
@@ -185,7 +205,7 @@ class Battlefield {
     this.currentTile.aliens.forEach(alien => {
       const closestMarine = this.getClosestMarine();
       if (closestMarine) {
-        this.resolveAlienAttack(alien, closestMarine);
+        this.onShot(alien, closestMarine);
       }
       else {
         this.leaveBattle(false);
@@ -197,6 +217,7 @@ class Battlefield {
 
   resolveMarineAttack(marine, alien) {
     console.log("marine attacking alien:" + alien.hitpoints + "-" + marine.power);
+    
     const targetDied = marine.attack(alien);
 
     if (targetDied) {
@@ -208,6 +229,7 @@ class Battlefield {
 
   resolveAlienAttack(alien, marine) {
     console.log("alien attacking marine:" + marine.hitpoints + "-" + alien.power);
+    
     const targetDied = alien.attack(marine);
 
     if (targetDied) {
