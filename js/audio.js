@@ -220,118 +220,20 @@ function createAudio() {
         return osc;
     }
 
-    function createHiHatInstrument(audioContext) {
-        const oscNoise = createWhiteNoise(audioContext);
-
-        var filter = audioContext.createBiquadFilter();
-        filter.type = "highpass";
-        filter.frequency.setValueAtTime(4000, audioContext.currentTime);
-
-        const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-        oscNoise.connect(filter);
-        filter.connect(gainNode);
-
-        return {
-            play: (params) => {
-                const volume = 0.6;
-                const attack = 0.01;
-                const hold = 0.01;
-                const release = 0.3;
-                envelope(gainNode.gain, params.time, volume, attack, hold, release);
-            },
-            connect: (destination) => {
-                gainNode.connect(destination);
-            }
-        }
-    }
-
-    function createSnareInstrument(audioContext) {
-        const oscNoise = createWhiteNoise(audioContext);
-
-        var filter = audioContext.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(0.0001, audioContext.currentTime);
-
-        const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-        oscNoise.connect(filter);
-        filter.connect(gainNode);
-
-        const outVolume = audioContext.createGain();
-        outVolume.gain.value = 0.7;
-        gainNode.connect(outVolume);
-
-        return {
-            play: (params) => {
-                const volume = 0.7;
-                const attack = 0.01;
-                const hold = 0.05;
-                const release = 0.4;
-                envelope(gainNode.gain, params.time, volume, attack, hold, release);
-                envelope(filter.frequency, params.time, 20000, 0.0001, 0.1, 0.8);
-            },
-            connect: (destination) => {
-                outVolume.connect(destination);
-            }
-        }
-    }
-
-    function createKickInstrument(audioContext) {
-        const osc = createSine(audioContext);
-        osc.frequency.setValueAtTime(50, audioContext.currentTime);
-        const noise = createWhiteNoise(audioContext);
-
-        var filter = audioContext.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(60, audioContext.currentTime);
-
-        const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-        osc.connect(filter);
-        noise.connect(filter)
-        filter.connect(gainNode);
-
-        return {
-            play: (params) => {
-                const volume = 0.9;
-                const attack = 0.001;
-                const hold = 0.01;
-                const release = 0.1;
-                envelope(gainNode.gain, params.time, volume, attack, hold, release);
-            },
-            connect: (destination) => {
-                gainNode.connect(destination);
-            }
-        }
-    }
-
     function createSynthInstrument(audioContext, oscFactory) {
 
         function createVoice(audioContext) {
-            const osc1 = oscFactory(audioContext);
-            const osc2 = oscFactory(audioContext);
-            const osc3 = oscFactory(audioContext);
-
-            osc2.detune.setValueAtTime(1200, audioContext.currentTime);
-            osc3.detune.setValueAtTime(1900, audioContext.currentTime);
-
-            osc1.frequency.value = 0;
-            osc2.frequency.value = 0;
-            osc3.frequency.value = 0;
+            const osc = oscFactory(audioContext);
+            osc.frequency.value = 0;
 
             const gainNode = audioContext.createGain();
             gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
 
-            osc1.connect(gainNode);
-            osc2.connect(gainNode);
-            osc3.connect(gainNode);
+            osc.connect(gainNode);
 
             const oscFreqControl = audioContext.createConstantSource();
             oscFreqControl.start(audioContext.currentTime);
-            oscFreqControl.connect(osc1.frequency);
-            oscFreqControl.connect(osc2.frequency);
-            oscFreqControl.connect(osc3.frequency);
+            oscFreqControl.connect(osc.frequency);
 
             return {
                 oscFreq: oscFreqControl.offset,
@@ -519,7 +421,7 @@ function createAudio() {
             getCurrentNoteParams: () => {
                 return {
                     step: (8 * stepsLoopCounter) + steps[stepsIndex],
-                    freq: () => state.scale[chord[chordIndex] + progression[progressionIndex] - 14],
+                    freq: () => state.scale[chord[chordIndex] + progression[progressionIndex] - 7],
                     hold: 2
                 };
             },
@@ -565,7 +467,7 @@ function createAudio() {
             getCurrentNoteParams: () => {
                 return {
                     step: (8 * stepsLoopCounter) + steps[stepsIndex],
-                    freq: () => state.scale[chord[chordIndex] + progression[progressionIndex] - 28],
+                    freq: () => state.scale[chord[chordIndex] + progression[progressionIndex] - 21],
                     hold: 1
                 };
             },
@@ -594,35 +496,7 @@ function createAudio() {
     bass.instrument.setFrequency(880);
     bass.instrument.connect(preGain);
 
-    const kick = createLoopTrack(createKickInstrument(ctx), {
-        length: 16,
-        pattern: [
-            {step: 0},
-            {step: 2},
-            {step: 8},
-        ],
-    });
-    kick.instrument.connect(preGain);
-
-    const snare = createLoopTrack(createSnareInstrument(ctx), {
-        length: 16,
-        pattern: [
-            {step: 4},
-            {step: 12},
-        ],
-    });
-    snare.instrument.connect(preGain);
-
-    const hihat = createLoopTrack(createHiHatInstrument(ctx), {
-        length: 8,
-        pattern: [
-            {step: 6},
-            {step: 10},
-        ],
-    });
-    hihat.instrument.connect(preGain);
-
-    const s = scheduler(ctx, [pulse, arp, kick, snare, bass, hihat]);
+    const s = scheduler(ctx, [pulse, arp, bass]);
 
     const initialBpm = 155;
     let speedUpTimer = null;
