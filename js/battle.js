@@ -15,8 +15,9 @@ class CameraScreen {
     this.walls = new WallsEntity(this.drawer);
     this.renderer.addEntity(this.walls);
 
-    this.battlefield.squad.marines.forEach(marine => {
-      this.renderer.addEntity(new MarineEntity(this.drawer, marine));
+    const marineNames = [ "Walter", "David", "Simon", "Adam" ];
+    this.battlefield.squad.marines.forEach((marine, index) => {
+      this.renderer.addEntity(new MarineEntity(this.drawer, marine, marineNames[index]));
     });
 
     this.currentAlienEntities = [];

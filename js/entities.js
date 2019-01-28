@@ -41,9 +41,10 @@ class GridEntity {
 }
 
 class MarineEntity {
-  constructor(drawer, marine) {
+  constructor(drawer, marine, name) {
     this.drawer = drawer;
     this.unit = marine;
+    this.name = name.toUpperCase();
     this.spacing = 70;
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
@@ -58,7 +59,7 @@ class MarineEntity {
 
   draw() {
     this.drawer.drawCircle(this.x, this.y, this.color);
-    const text = "MARINE " + this.unit.hitpoints + "";
+    const text = this.name + " " + this.unit.hitpoints;
     this.drawer.writeText(this.x, this.y - 22, text, this.color);
   }
 
