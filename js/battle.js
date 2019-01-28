@@ -24,9 +24,6 @@ class CameraScreen {
     this.currentAlienEntities = [];
 
     this.finalTile = this.battlefield.grid.getTile(finalTileCoordinates.x, finalTileCoordinates.y);
-
-    const killButton = new Input("kill");
-    killButton.onClick = () => this.battlefield.killCurrentAliens();
   }
 
   start() {
@@ -297,13 +294,6 @@ class Battlefield {
       return this.grid.getTile(newX, newY);
     }
     return null;
-  }
-
-  killCurrentAliens() {
-    this.currentTile.aliens.forEach(alien => {
-      this.onAlienDeath(alien);
-      this.currentTile.removeAlien(alien);
-    })
   }
 }
 

@@ -176,15 +176,9 @@
       left: 0;
     }
 
-    button.kill {
-      top: 0;
-      left: 0;
-      position: absolute;
-    }
-
     button.clear {
       top: 0;
-      left: 50px;
+      left: 0;
       position: absolute;
     }
   </style>
@@ -194,8 +188,7 @@
   <img src="gwgc201819_overlay.png" class="overlay" />
 
   <main>
-    <button id="kill" class="kill">kill</button>
-    <button id="clear" class="clear">clear</button>
+    <button id="clear" class="clear" hidden>clear</button>
     <div id="help" class="help" title="Hold 'H' for help">?</div>
     <button id="top" class="direction top" hidden>
       <svg width="40px" height="180px">
