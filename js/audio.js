@@ -287,10 +287,7 @@ function createAudio() {
     }
 
     function createPulse(ctx) {
-        const osc = ctx.createOscillator();
-        osc.type = "square";
-        osc.start(ctx.currentTime);
-
+        const osc = createSquare(ctx);
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0.0001, ctx.currentTime);
         osc.connect(gain);
@@ -365,6 +362,37 @@ function createAudio() {
         }
     }
 
+    function createNoiseDown(ctx) {
+        const osc = createWhiteNoise(ctx);
+        const filter = ctx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.Q = 10;
+        filter.frequency.value = 10000;
+        const gain = ctx.createGain();
+        gain.gain.value = 0.00001;
+        osc.connect(filter);
+        filter.connect(gain);
+
+        return {
+            play: () => {
+                const time = ctx.currentTime;
+                gain.gain.cancelScheduledValues(time);
+                gain.gain.setValueAtTime(0.00001, time);
+                gain.gain.exponentialRampToValueAtTime(1, time + 0.1);
+                gain.gain.setValueAtTime(1, time + 1);
+                gain.gain.exponentialRampToValueAtTime(0.00001, time + 4);
+                gain.gain.setValueAtTime(0.00001, time + 4);
+
+                filter.frequency.cancelScheduledValues(time);
+                filter.frequency.setValueAtTime(20000, time);
+                filter.frequency.exponentialRampToValueAtTime(200, time + 3);
+            },
+            connect: (destination) => {
+                gain.connect(destination);
+            },
+        }
+    }
+
     const ctx = new AudioContext();
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0.3;
@@ -404,6 +432,8 @@ function createAudio() {
         ],
     });
     pulse.instrument.connect(preGain);
+
+    const musicGain = ctx.createGain();
 
     const arp = (function() {
         const steps = [0, 2, 4, 6];
@@ -449,7 +479,7 @@ function createAudio() {
     })();
     arp.instrument.setFrequency(5000);
     arp.instrument.setVolume(0.08);
-    arp.instrument.connect(preGain);
+    arp.instrument.connect(musicGain);
 
     const bass = (function() {
         const steps = [0, 2, 4, 6];
@@ -494,10 +524,17 @@ function createAudio() {
         };
     })();
     bass.instrument.setFrequency(880);
-    bass.instrument.connect(preGain);
+    bass.instrument.connect(musicGain);
+
+    const musicFilter = ctx.createBiquadFilter();
+    musicFilter.type = "lowpass";
+    musicFilter.frequency.value = 20000;
+    musicFilter.Q.value = 10;
+    musicGain.connect(musicFilter);
+    musicFilter.connect(preGain);
 
     const s = scheduler(ctx, [pulse, arp, bass]);
-
+    s.start();
     const initialBpm = 155;
     let speedUpTimer = null;
 
@@ -506,6 +543,9 @@ function createAudio() {
 
     const pewPewPew = createPewPewPew(ctx);
     pewPewPew.connect(preGain);
+
+    const noiseDown = createNoiseDown(ctx);
+    noiseDown.connect(preGain);
 
     return {
         pulse: {
@@ -537,6 +577,9 @@ function createAudio() {
             synth.speak(msg);
         },
         squadEnteringSector: () => {
+            musicFilter.frequency.setValueAtTime(400, ctx.currentTime);
+            musicFilter.frequency.exponentialRampToValueAtTime(15000, ctx.currentTime + 1);
+
             if (speedUpTimer == null) {
                 let bpm = initialBpm;
                 s.setBPM(bpm);
@@ -549,10 +592,12 @@ function createAudio() {
                     s.setBPM(bpm);
                 }, 700);
             }
-            s.start();
         },
         squadLeavingSector: () => {
-            s.stop();
+            noiseDown.play();
+            musicFilter.frequency.setValueAtTime(15000, ctx.currentTime);
+            musicFilter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.8);
+
             if (speedUpTimer != null) {
                 clearInterval(speedUpTimer);
                 speedUpTimer = null;
