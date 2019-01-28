@@ -184,10 +184,7 @@ class Battlefield {
     const finalTile = this.grid.getTile(finalTileCoordinates.x, finalTileCoordinates.y);
     this.grid.clearTile(finalTile);
 
-    this.squad = new Squad(startingTile, 4);
-
-    this.squadAttacks = this.squadAttacks.bind(this);
-    this.aliensAttack = this.aliensAttack.bind(this);
+    this.squad = new Squad(startingTile);
   }
 
   get currentTile() {
@@ -200,41 +197,46 @@ class Battlefield {
   }
 
   doBattle() {
-    this.squadAttacking = setInterval(this.squadAttacks, 3000);
-    this.aliensAttacking = setInterval(this.aliensAttack, 2000);
+    this.squad.marines.forEach(marine => {
+      marine.attacking = setInterval(() => this.marineAttacks(marine), marine.attackSpeed);
+    });
+
+    this.currentTile.aliens.forEach(alien => {
+      this.alienAttacks(alien);
+      alien.attacking = setInterval(() => this.alienAttacks(alien), alien.attackSpeed);
+    });
   }
 
   leaveBattle() {
-    this.squadAttacking && clearInterval(this.squadAttacking);
-    this.aliensAttacking && clearInterval(this.aliensAttacking);
-  }
-
-  squadAttacks() {
     this.squad.marines.forEach(marine => {
-      const closestAlien = this.getClosestAlien(marine);
-      if (closestAlien) {
-        this.onShot(marine, closestAlien);
-      }
-      else {
-        this.leaveBattle(true);
-        console.log("sector clear");
-        return;
-      }
+      marine.attacking && clearInterval(marine.attacking);
+    });
+
+    this.currentTile.aliens.forEach(alien => {
+      alien.attacking && clearInterval(alien.attacking);
     });
   }
 
-  aliensAttack() {
-    this.currentTile.aliens.forEach(alien => {
-      const closestMarine = this.getClosestMarine(alien);
-      if (closestMarine) {
-        this.onShot(alien, closestMarine);
-      }
-      else {
-        this.leaveBattle(false);
-        console.log("squad killed");
-        return;
-      }
-    });
+  marineAttacks(marine) {
+    const closestAlien = this.getClosestAlien(marine);
+    if (closestAlien) {
+      this.onShot(marine, closestAlien);
+    }
+    else {
+      this.leaveBattle(true);
+      console.log("sector clear");
+    }
+  }
+
+  alienAttacks(alien) {
+    const closestMarine = this.getClosestMarine(alien);
+    if (closestMarine) {
+      this.onShot(alien, closestMarine);
+    }
+    else {
+      this.leaveBattle(false);
+      console.log("squad killed");
+    }
   }
 
   resolveMarineAttack(marine, alien) {
@@ -243,6 +245,7 @@ class Battlefield {
     const targetDied = marine.attack(alien);
 
     if (targetDied) {
+      alien.attacking && clearInterval(alien.attacking);
       this.onAlienDeath(alien);
       this.currentTile.removeAlien(alien);
       console.log("marine killed alien");
@@ -255,6 +258,7 @@ class Battlefield {
     const targetDied = alien.attack(marine);
 
     if (targetDied) {
+      marine.attacking && clearInterval(marine.attacking);
       this.squad.removeMarine(marine);
       this.onMarineDeath(marine);
       console.log("alien killed marine");
@@ -319,7 +323,10 @@ class Tile {
       const randomIndex = random(0, possiblePositions.length - 1);
       const position = possiblePositions[randomIndex];
       possiblePositions.splice(randomIndex, 1);
-      this.aliens.push(new Unit(2, 1, position));
+
+      const randomHitpoints = random(9, 11);
+      const randomAttackSpeed = random(1400, 1600);
+      this.aliens.push(new Unit(randomHitpoints, 1, position, randomAttackSpeed));
     }
   }
 
@@ -358,12 +365,19 @@ class Grid {
 }
 
 class Squad {
-  constructor(tile, squadSize) {
+  constructor(tile) {
     this.tile = tile;
 
     this.marines = [];
-    for (var i = 0; i < squadSize; i++) {
-      this.marines.push(new Unit(10, 1, i));
+    const marineStats = [
+      { hitpoints: 44, power: 1, position: 0, attackSpeed: 2200 },
+      { hitpoints: 40, power: 1, position: 1, attackSpeed: 2000 },
+      { hitpoints: 36, power: 1, position: 2, attackSpeed: 1800 },
+      { hitpoints: 38, power: 1, position: 3, attackSpeed: 1900 },
+    ];
+    for (var i = 0; i < 4; i++) {
+      const stats = marineStats[i];
+      this.marines.push(new Unit(stats.hitpoints, stats.power, stats.position, stats.attackSpeed));
     }
   }
 
@@ -379,10 +393,11 @@ class Squad {
 }
 
 class Unit {
-  constructor(hitpoints, power, position) {
+  constructor(hitpoints, power, position, attackSpeed) {
     this.hitpoints = hitpoints;
     this.power = power;
     this.position = position;
+    this.attackSpeed = attackSpeed;
   }
 
   attack(unit) {
