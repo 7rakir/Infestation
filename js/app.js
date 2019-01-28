@@ -12,7 +12,7 @@ class Game {
   start() {
     this.audio = createAudio();
     this.terminal = new Terminal(this.onSync.bind(this), this.audio);
-    this.camera = new CameraScreen(this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
+    this.camera = new CameraScreen(this.audio, this.onGameOver.bind(this), this.onSquadLeave.bind(this), this.onSquadArrive.bind(this));
     this.camera.start();
 
     const clearButton = new Input("clear");
@@ -35,7 +35,7 @@ class Game {
       this.terminal.enableControls();
       this.terminal.initializeSines();
     }
-    
+
     this.audio.squadEnteringSector();
   }
 
@@ -190,7 +190,7 @@ class DurationAnimation extends Animation {
   constructor(finalDuration, onExpire, progressFunction, offset = 0) {
     super(onExpire);
     this.finalDuration = finalDuration + offset;
-    
+
     this.current = offset;
     this.progressFunction = progressFunction;
   }

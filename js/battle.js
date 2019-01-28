@@ -1,5 +1,6 @@
 class CameraScreen {
-  constructor(onGameOver, onSquadLeave, onSquadArrive) {
+  constructor(audio, onGameOver, onSquadLeave, onSquadArrive) {
+    this.audio = audio;
     this.onGameOver = onGameOver;
     this.onSquadLeave = onSquadLeave;
     this.onSquadArrive = onSquadArrive;
@@ -81,6 +82,7 @@ class CameraScreen {
     const shotEntity = new ShotEntity(this.drawer, sourceEntity, targetEntity);
     this.renderer.addEntity(shotEntity);
     shotEntity.start(() => this.onShotFinish(shotEntity, sourceEntity, targetEntity));
+    this.audio.fire();
   }
 
   onShotFinish(shotEntity, sourceEntity, targetEntity) {
@@ -237,7 +239,7 @@ class Battlefield {
 
   resolveMarineAttack(marine, alien) {
     console.log("marine attacking alien:" + alien.hitpoints + "-" + marine.power);
-    
+
     const targetDied = marine.attack(alien);
 
     if (targetDied) {
@@ -249,7 +251,7 @@ class Battlefield {
 
   resolveAlienAttack(alien, marine) {
     console.log("alien attacking marine:" + marine.hitpoints + "-" + alien.power);
-    
+
     const targetDied = alien.attack(marine);
 
     if (targetDied) {

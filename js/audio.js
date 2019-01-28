@@ -408,6 +408,61 @@ function createAudio() {
         }
     }
 
+    function createPewPewPew(ctx) {
+
+        function createVoice() {
+            const osc = ctx.createOscillator();
+            osc.type = "sine";
+            osc.frequency.value = 1000;
+            osc.start();
+            const gain = ctx.createGain();
+            gain.gain.value = 0.000001;
+            osc.connect(gain);
+
+            return {
+                frequency: osc.frequency,
+                gain: gain.gain,
+                connect: (destination) => {
+                    gain.connect(destination);
+                },
+            }
+        }
+
+        const master = ctx.createGain();
+
+        const voices = [];
+        for (let i = 0; i < 8; i++) {
+            const voice = createVoice(ctx);
+            voice.connect(master);
+            voices.push(voice);
+        }
+        let currentVoice = -1;
+
+        return {
+            play: () => {
+                currentVoice++;
+                if (currentVoice >= voices.length) {
+                    currentVoice = 0;
+                }
+
+                const time = ctx.currentTime;
+                voices[currentVoice].frequency.cancelScheduledValues(time);
+                const randomUp = Math.floor(Math.random() * 2000);
+                const randomDown = Math.floor(Math.random() * 100);
+                voices[currentVoice].frequency.setValueAtTime(randomUp + 3000, time);
+                voices[currentVoice].frequency.exponentialRampToValueAtTime(randomDown + 50, time + 0.7);
+                voices[currentVoice].gain.cancelScheduledValues(time);
+                voices[currentVoice].gain.setValueAtTime(0.0000001, time);
+                voices[currentVoice].gain.exponentialRampToValueAtTime(0.5, time + 0.01);
+                voices[currentVoice].gain.setValueAtTime(0.5, time + 0.01);
+                voices[currentVoice].gain.exponentialRampToValueAtTime(0.000001, time + 1.5);
+            },
+            connect: (destination) => {
+                master.connect(destination);
+            },
+        }
+    }
+
     const ctx = new AudioContext();
     const masterGain = ctx.createGain();
     masterGain.gain.value = 0.3;
@@ -575,6 +630,9 @@ function createAudio() {
     // https://stackoverflow.com/questions/21513706
     window.speechSynthesis.getVoices();
 
+    const pewPewPew = createPewPewPew(ctx);
+    pewPewPew.connect(preGain);
+
     return {
         pulse: {
             setPlayerCallback: (func) => {
@@ -627,7 +685,7 @@ function createAudio() {
             }
         },
         fire: () => {
-            //TODO: Play pewpewpew sound
+            pewPewPew.play();
         },
         marineDied: () => {
             //TODO: Play marine dead sound
