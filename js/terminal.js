@@ -59,12 +59,12 @@ class Terminal {
   initializeSines() {
     this.currentSine.amplitude = (amplitudeInput.max + amplitudeInput.min) / 2;
     this.currentSine.frequencyMultiplier = (frequencyInput.max + frequencyInput.min) / 2;
-    this.currentSine.offsetX = (offsetInput.max + offsetInput.min) / 2;
+    this.currentSine.offsetX = 0;
     this.audio.pulse.setPlayerFrequency(this.currentSine.frequencyMultiplier);
 
     amplitudeInput.value = this.currentSine.amplitude;
     frequencyInput.value = this.currentSine.frequencyMultiplier;
-    offsetInput.value = this.currentSine.offset;
+    offsetInput.value = this.currentSine.offsetX;
 
     const randomAmplitude = random(amplitudeInput.min, amplitudeInput.max, amplitudeInput.step);
     const randomFrequency = random(frequencyInput.min, frequencyInput.max, frequencyInput.step);
