@@ -36,9 +36,17 @@ const helpText = `
 
 const tileLockedText = "<p>Signal of the door already synchronized.</p>"
 
-const winningText = "<p>Congratulations!</p><p>Your squad has escaped the horrors of the station.</p>";
+const winningText = `
+  <p>Congratulations!</p>
+  <p>Your squad has escaped the horrors of the station.</p>
+  <p>As the escape module slowly approaches your spaceship you prepare it for a route towards Omicron 6. With the help of the planet's new colony, you will reclaim the station.</p>
+`;
 
-const losingText = "<p>Game over!</p><p>Your squad has been overwhelmed by the organisms at the station.</p>";
+const losingText = `
+  <p>Game over!</p>
+  <p>Your squad has been overwhelmed by the organisms at the station.</p>
+  <p>Blaming yourself for their deaths you start the engines of your spaceship and quickly set off to Omicron 6. Hopefully its new colony can help you with the station's infestation...</p>
+`;
 
 class TextArea {
   constructor(id) {
