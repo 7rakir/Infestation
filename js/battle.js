@@ -66,10 +66,13 @@ class CameraScreen {
     this.renderer.removeEntityWhere(marineEntity => marineEntity.unit == marine);
     if(this.battlefield.squad.marines.length === 0) {
       this.onGameOver(false);
+    } else {
+      this.audio.marineDied();
     }
   }
 
   onAlienDeath(alien) {
+    this.audio.alienDied();
     this.renderer.removeEntityWhere(alienEntity => alienEntity.unit == alien);
   }
 

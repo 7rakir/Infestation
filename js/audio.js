@@ -362,6 +362,42 @@ function createAudio() {
         }
     }
 
+    function createExplosion(ctx) {
+        const noise = createWhiteNoise(ctx);
+        const gain = ctx.createGain();
+        gain.gain.value = 0.00001;
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 800;
+        const sweep = ctx.createBiquadFilter();
+        sweep.type = "peaking";
+        sweep.Q = 10;
+        sweep.gain.value = 10;
+        sweep.frequency.value = 2000;
+        noise.connect(filter);
+        filter.connect(gain);
+        filter.connect(sweep);
+        sweep.connect(gain);
+
+        return {
+            play: () => {
+                const time = ctx.currentTime;
+                gain.gain.cancelScheduledValues(time);
+                gain.gain.setValueAtTime(0.00001, time);
+                gain.gain.exponentialRampToValueAtTime(2, time + 0.01);
+                gain.gain.setValueAtTime(2, time + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.00001, time + 4);
+
+                sweep.frequency.cancelScheduledValues(time);
+                sweep.frequency.setValueAtTime(2000, time);
+                sweep.frequency.exponentialRampToValueAtTime(100, time + 1);
+            },
+            connect: (destination) => {
+                gain.connect(destination);
+            },
+        }
+    }
+
     function createNoiseDown(ctx) {
         const osc = createWhiteNoise(ctx);
         const filter = ctx.createBiquadFilter();
@@ -547,6 +583,9 @@ function createAudio() {
     const noiseDown = createNoiseDown(ctx);
     noiseDown.connect(preGain);
 
+    const explosion = createExplosion(ctx);
+    explosion.connect(preGain);
+
     return {
         pulse: {
             setPlayerCallback: (func) => {
@@ -573,7 +612,7 @@ function createAudio() {
                 msg.voice = voice;
                 msg.pitch = 0.7;
             }
-            msg.text = "Doors unlocked."
+            msg.text = "Doors unlocked!"
             synth.speak(msg);
         },
         squadEnteringSector: () => {
@@ -607,10 +646,18 @@ function createAudio() {
             pewPewPew.play();
         },
         marineDied: () => {
-            //TODO: Play marine dead sound
+            const synth = window.speechSynthesis;
+            var msg = new SpeechSynthesisUtterance();
+            const voice = synth.getVoices().filter(v => v.name == "Google UK English Female")[0];
+            if (!!voice) {
+                msg.voice = voice;
+                msg.pitch = 0.7;
+            }
+            msg.text = "Marine died!"
+            synth.speak(msg);
         },
         alienDied: () => {
-            //TODO: Play alien dead sound
+            explosion.play();
         },
     }
 }
