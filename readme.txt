@@ -1,2 +1,3 @@
-Game:     Reckless
-Authors:  Drakir, Pirky
+Game:     Infestation
+Authors:  Drakir, Lowcase
+
