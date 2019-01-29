@@ -9,14 +9,14 @@ const introductionText = `
   <p>You and your team noticed that a space station did not respond to your requests about the status near your destination at Omicron 6. As is the law, every spaceship has to investigate a potential power or oxygen defect when passing any vessel.</p>
   <p>While you were trying to reach anyone else assuming that the personnel at the station might require further help, the rest of your squad approached and docked the station in one of your modules.</p>
   <p>Shortly after your squad entered the station, all communication went dark. After a while you finally managed to gain access to basic systems of the station. You now see that the station is severely damaged from the inside and is <u>infested by multiple dangerous organisms</u> in every room.</p>
-  <p>As the squad's module was damaged due to the fight with several of these organisms, you now have to lead your squad to one of the station's escape module on the other side. However, the <u>doors between each room have been automatically closed</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u> for each door.</p>
+  <p>As the squad's module was damaged due to the fight with several of these organisms, you now have to lead your squad to one of the station's own escape modules on the other side. However, the <u>doors between each room have been automatically locked</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u> for each door.</p>
   <p>Lead your squad to safety before they are overrun.</p>
   </br>
   <p>&gt; Click to proceed</p>
 `;
 
 const helpText = `
-  <p>Synchronize your red signal to the door green signal:</p>
+  <p>Synchronize your green signal to the red door signal:</p>
   <ul>
     <li>NUM7: lower frequency</li>
     <li>NUM8: higher frequency</li>

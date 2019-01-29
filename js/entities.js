@@ -49,8 +49,8 @@ class MarineEntity {
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
-    this.color = new Color(0, 0, 150);
-    this.shotColor = new Color(0, 0, 250);
+    this.color = new Color(20, 145, 26);
+    this.shotColor = new Color(50, 255, 50);
 
     const position = getUnitPosition(this.unit.position, this.spacing);
     this.x = this.originX + position.x;
@@ -74,8 +74,8 @@ class AlienEntity {
     this.originX = drawer.canvas.width / 2;
     this.originY = drawer.canvas.height / 2;
 
-    this.color = new Color(150, 0, 0);
-    this.shotColor = new Color(250, 0, 0);
+    this.color = new Color(170, 0, 0);
+    this.shotColor = new Color(255, 50, 50);
 
     const position = getUnitPosition(this.unit.position, this.spacing);
     this.x = this.originX + position.x;

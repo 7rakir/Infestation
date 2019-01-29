@@ -46,8 +46,8 @@ class Terminal {
 
     this.gridEntity = new GridEntity(this.drawer, this.checkSine);
 
-    this.currentSineEntity = new SineEntity(this.drawer, this.currentSine, new Color(255, 0, 0));
-    this.checkSineEntity = new SineEntity(this.drawer, this.checkSine, new Color(0, 255, 0, 0.3));
+    this.currentSineEntity = new SineEntity(this.drawer, this.currentSine, new Color(0, 255, 0));
+    this.checkSineEntity = new SineEntity(this.drawer, this.checkSine, new Color(255, 0, 0));
     this.initializeSines();
 
     this.audio.pulse.setPlayerCallback(this.currentSineEntity.startPulse.bind(this.currentSineEntity));
@@ -80,8 +80,9 @@ class Terminal {
 
   enableTerminal() {
     this.renderer.addEntity(this.gridEntity);
-    this.renderer.addEntity(this.currentSineEntity);
     this.renderer.addEntity(this.checkSineEntity);
+    this.renderer.addEntity(this.currentSineEntity);
+    
     frequencyInput.hidden = false;
     amplitudeInput.hidden = false;
     offsetInput.hidden = false;
