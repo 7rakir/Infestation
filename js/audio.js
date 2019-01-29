@@ -26,6 +26,27 @@ function createAudio() {
         return scale;
     }
 
+    function createOneShotTrack(instrument, pattern) {
+        let currentNote = 0;
+
+        return {
+            instrument: instrument,
+            mute: false,
+            getCurrentNoteParams: () => {
+                if (currentNote >= pattern.length) {
+                    return null;
+                }
+                return pattern[currentNote];
+            },
+            nextNote: () => {
+                currentNote++;
+            },
+            reset: () => {
+                currentNote = 0;
+            },
+        }
+    }
+
     function createLoopTrack(instrument, loop) {
         let currentLoop = 0;
         let currentNote = 0;
@@ -99,6 +120,9 @@ function createAudio() {
             function scheduleNextNote(){
                 if (!track.mute) {
                     const noteParams = track.getCurrentNoteParams();
+                    if (noteParams == null) {
+                        return;
+                    }
 
                     noteParams.time = grid.getStepTime(noteParams.step);
 
@@ -120,6 +144,9 @@ function createAudio() {
 
             function getNextNoteTime(){
                 const noteParams = track.getCurrentNoteParams();
+                if (noteParams == null) {
+                    return Number.MAX_VALUE;
+                }
                 return grid.getStepTime(noteParams.step);
             }
 
@@ -362,6 +389,42 @@ function createAudio() {
         }
     }
 
+    function createExplosion(ctx) {
+        const noise = createWhiteNoise(ctx);
+        const gain = ctx.createGain();
+        gain.gain.value = 0.00001;
+        const filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 800;
+        const sweep = ctx.createBiquadFilter();
+        sweep.type = "peaking";
+        sweep.Q = 10;
+        sweep.gain.value = 10;
+        sweep.frequency.value = 2000;
+        noise.connect(filter);
+        filter.connect(gain);
+        filter.connect(sweep);
+        sweep.connect(gain);
+
+        return {
+            play: () => {
+                const time = ctx.currentTime;
+                gain.gain.cancelScheduledValues(time);
+                gain.gain.setValueAtTime(0.00001, time);
+                gain.gain.exponentialRampToValueAtTime(2, time + 0.01);
+                gain.gain.setValueAtTime(2, time + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.00001, time + 4);
+
+                sweep.frequency.cancelScheduledValues(time);
+                sweep.frequency.setValueAtTime(2000, time);
+                sweep.frequency.exponentialRampToValueAtTime(100, time + 1);
+            },
+            connect: (destination) => {
+                gain.connect(destination);
+            },
+        }
+    }
+
     function createNoiseDown(ctx) {
         const osc = createWhiteNoise(ctx);
         const filter = ctx.createBiquadFilter();
@@ -424,6 +487,8 @@ function createAudio() {
         scale: majorScale(freqencyOffset),
     };
 
+    const pulseGain = ctx.createGain();
+    pulseGain.connect(preGain);
     const pulse = createLoopTrack(createPulse(ctx), {
         length: 32,
         pattern: [
@@ -431,7 +496,8 @@ function createAudio() {
             {step: 16, freq: () => state.scale[0], callback: () => state.pulse.checkCallback()},
         ],
     });
-    pulse.instrument.connect(preGain);
+    pulse.instrument.connect(pulseGain);
+
 
     const musicGain = ctx.createGain();
 
@@ -547,6 +613,9 @@ function createAudio() {
     const noiseDown = createNoiseDown(ctx);
     noiseDown.connect(preGain);
 
+    const explosion = createExplosion(ctx);
+    explosion.connect(preGain);
+
     return {
         pulse: {
             setPlayerCallback: (func) => {
@@ -573,10 +642,11 @@ function createAudio() {
                 msg.voice = voice;
                 msg.pitch = 0.7;
             }
-            msg.text = "Doors unlocked."
+            msg.text = "Doors unlocked!"
             synth.speak(msg);
         },
         squadEnteringSector: () => {
+            pulseGain.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.001);
             musicFilter.frequency.setValueAtTime(400, ctx.currentTime);
             musicFilter.frequency.exponentialRampToValueAtTime(15000, ctx.currentTime + 1);
 
@@ -594,6 +664,7 @@ function createAudio() {
             }
         },
         squadLeavingSector: () => {
+            pulseGain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.001);
             noiseDown.play();
             musicFilter.frequency.setValueAtTime(15000, ctx.currentTime);
             musicFilter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.8);
@@ -607,10 +678,51 @@ function createAudio() {
             pewPewPew.play();
         },
         marineDied: () => {
-            //TODO: Play marine dead sound
+            const synth = window.speechSynthesis;
+            var msg = new SpeechSynthesisUtterance();
+            const voice = synth.getVoices().filter(v => v.name == "Google UK English Female")[0];
+            if (!!voice) {
+                msg.voice = voice;
+                msg.pitch = 0.7;
+            }
+            msg.text = "Marine died!"
+            synth.speak(msg);
         },
         alienDied: () => {
-            //TODO: Play alien dead sound
+            explosion.play();
+        },
+        gameOver: (isPositiveEnding) => {
+            pulseGain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.001);
+            musicFilter.frequency.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+            let pattern;
+            if (isPositiveEnding) {
+                pattern = createOneShotTrack(createSynthInstrument(ctx, createSaw), [
+                    { step: 0,  freq: () => state.scale[0], hold: 1 },
+                    { step: 2,  freq: () => state.scale[4], hold: 1 },
+                    { step: 4,  freq: () => state.scale[2], hold: 1 },
+                    { step: 6,  freq: () => state.scale[7], hold: 1 },
+                    { step: 8,  freq: () => state.scale[4], hold: 1 },
+                    { step: 10, freq: () => state.scale[9], hold: 1 },
+                    { step: 12, freq: () => state.scale[7], hold: 1 },
+                    { step: 14, freq: () => state.scale[11], hold: 1 },
+                ]);
+            } else {
+                pattern = createOneShotTrack(createSynthInstrument(ctx, createSaw), [
+                    { step: 0,  freq: () => state.scale[11], hold: 1 },
+                    { step: 2,  freq: () => state.scale[7], hold: 1 },
+                    { step: 4,  freq: () => state.scale[9], hold: 1 },
+                    { step: 6,  freq: () => state.scale[4], hold: 1 },
+                    { step: 8,  freq: () => state.scale[7], hold: 1 },
+                    { step: 10, freq: () => state.scale[2], hold: 1 },
+                    { step: 12, freq: () => state.scale[4], hold: 1 },
+                    { step: 14, freq: () => state.scale[0], hold: 1 },
+                ]);
+            }
+            pattern.instrument.connect(preGain);
+
+            var s = scheduler(ctx, [pattern]);
+            s.setBPM(180);
+            s.start();
         },
     }
 }

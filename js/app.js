@@ -45,6 +45,7 @@ class Game {
     this.camera.disableCamera();
     cameraText.addText(isPositiveEnding ? winningText : losingText);
     cameraText.show();
+    this.audio.gameOver(isPositiveEnding);
     document.getElementById('help').style.display = "none";
     console.log("end " + isPositiveEnding);
   }
