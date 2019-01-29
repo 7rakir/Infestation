@@ -1,12 +1,14 @@
 class Game {
   constructor() {
-    const click = () => {
-      window.removeEventListener('click', click);
+    const startGame = () => {
+      window.removeEventListener('keydown', startGame);
+      document.addEventListener("keydown", onKeyDown, false);
+      document.addEventListener("keyup", onKeyUp, false);
       cameraText.hide();
       terminalText.hide();
       this.start();
     };
-    window.addEventListener('click', click);
+    window.addEventListener('keydown', startGame);
   }
 
   start() {

@@ -12,7 +12,7 @@ const introductionText = `
   <p>As the squad's module was damaged due to the fight with several of these organisms, you now have to lead your squad to one of the station's own escape modules on the other side. However, the <u>doors between each room have been automatically locked</u> to keep the integrity of the station intact and have to be <u>unlocked by finding the right signal</u> for each door.</p>
   <p>Lead your squad to safety before they are overrun.</p>
   </br>
-  <p>&gt; Click to proceed</p>
+  <p>&gt; Press any key to continue</p>
 `;
 
 const helpText = `

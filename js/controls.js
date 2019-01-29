@@ -76,9 +76,6 @@ class Input {
   }
 }
 
-document.addEventListener("keydown", onKeyDown, false);
-document.addEventListener("keyup", onKeyUp, false);
-
 function onKeyDown(event) {
   var keyCode = event.keyCode;
 
