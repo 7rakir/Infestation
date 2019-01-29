@@ -342,7 +342,7 @@ class Grid {
     for (var i = 0; i < this.tiles.length; i++) {
       this.tiles[i] = new Array(size);
       for (var j = 0; j < this.tiles[i].length; j++) {
-        const alienCount = random(1, 4);
+        const alienCount = random(2, 4);
         this.tiles[i][j] = new Tile(j, i, alienCount);
       }
     }
