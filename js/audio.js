@@ -26,6 +26,27 @@ function createAudio() {
         return scale;
     }
 
+    function createOneShotTrack(instrument, pattern) {
+        let currentNote = 0;
+
+        return {
+            instrument: instrument,
+            mute: false,
+            getCurrentNoteParams: () => {
+                if (currentNote >= pattern.length) {
+                    return null;
+                }
+                return pattern[currentNote];
+            },
+            nextNote: () => {
+                currentNote++;
+            },
+            reset: () => {
+                currentNote = 0;
+            },
+        }
+    }
+
     function createLoopTrack(instrument, loop) {
         let currentLoop = 0;
         let currentNote = 0;
@@ -99,6 +120,9 @@ function createAudio() {
             function scheduleNextNote(){
                 if (!track.mute) {
                     const noteParams = track.getCurrentNoteParams();
+                    if (noteParams == null) {
+                        return;
+                    }
 
                     noteParams.time = grid.getStepTime(noteParams.step);
 
@@ -120,6 +144,9 @@ function createAudio() {
 
             function getNextNoteTime(){
                 const noteParams = track.getCurrentNoteParams();
+                if (noteParams == null) {
+                    return Number.MAX_VALUE;
+                }
                 return grid.getStepTime(noteParams.step);
             }
 
@@ -667,6 +694,35 @@ function createAudio() {
         gameOver: (isPositiveEnding) => {
             pulseGain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.001);
             musicFilter.frequency.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
+            let pattern;
+            if (isPositiveEnding) {
+                pattern = createOneShotTrack(createSynthInstrument(ctx, createSaw), [
+                    { step: 0,  freq: () => state.scale[0], hold: 1 },
+                    { step: 2,  freq: () => state.scale[4], hold: 1 },
+                    { step: 4,  freq: () => state.scale[2], hold: 1 },
+                    { step: 6,  freq: () => state.scale[7], hold: 1 },
+                    { step: 8,  freq: () => state.scale[4], hold: 1 },
+                    { step: 10, freq: () => state.scale[9], hold: 1 },
+                    { step: 12, freq: () => state.scale[7], hold: 1 },
+                    { step: 14, freq: () => state.scale[11], hold: 1 },
+                ]);
+            } else {
+                pattern = createOneShotTrack(createSynthInstrument(ctx, createSaw), [
+                    { step: 0,  freq: () => state.scale[11], hold: 1 },
+                    { step: 2,  freq: () => state.scale[7], hold: 1 },
+                    { step: 4,  freq: () => state.scale[9], hold: 1 },
+                    { step: 6,  freq: () => state.scale[4], hold: 1 },
+                    { step: 8,  freq: () => state.scale[7], hold: 1 },
+                    { step: 10, freq: () => state.scale[2], hold: 1 },
+                    { step: 12, freq: () => state.scale[4], hold: 1 },
+                    { step: 14, freq: () => state.scale[0], hold: 1 },
+                ]);
+            }
+            pattern.instrument.connect(preGain);
+
+            var s = scheduler(ctx, [pattern]);
+            s.setBPM(180);
+            s.start();
         },
     }
 }
