@@ -460,6 +460,8 @@ function createAudio() {
         scale: majorScale(freqencyOffset),
     };
 
+    const pulseGain = ctx.createGain();
+    pulseGain.connect(preGain);
     const pulse = createLoopTrack(createPulse(ctx), {
         length: 32,
         pattern: [
@@ -467,7 +469,8 @@ function createAudio() {
             {step: 16, freq: () => state.scale[0], callback: () => state.pulse.checkCallback()},
         ],
     });
-    pulse.instrument.connect(preGain);
+    pulse.instrument.connect(pulseGain);
+
 
     const musicGain = ctx.createGain();
 
@@ -616,6 +619,7 @@ function createAudio() {
             synth.speak(msg);
         },
         squadEnteringSector: () => {
+            pulseGain.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.001);
             musicFilter.frequency.setValueAtTime(400, ctx.currentTime);
             musicFilter.frequency.exponentialRampToValueAtTime(15000, ctx.currentTime + 1);
 
@@ -633,6 +637,7 @@ function createAudio() {
             }
         },
         squadLeavingSector: () => {
+            pulseGain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.001);
             noiseDown.play();
             musicFilter.frequency.setValueAtTime(15000, ctx.currentTime);
             musicFilter.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.8);
@@ -658,6 +663,10 @@ function createAudio() {
         },
         alienDied: () => {
             explosion.play();
+        },
+        gameOver: (isPositiveEnding) => {
+            pulseGain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.001);
+            musicFilter.frequency.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.8);
         },
     }
 }
