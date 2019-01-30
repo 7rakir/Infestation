@@ -1,6 +1,9 @@
 class Game {
   constructor() {
-    const startGame = () => {
+    const startGame = (event) => {
+      if(event.keyCode === 	122) {
+        return;
+      }
       window.removeEventListener('keydown', startGame);
       document.addEventListener("keydown", onKeyDown, false);
       document.addEventListener("keyup", onKeyUp, false);
