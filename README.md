@@ -14,7 +14,7 @@ When you match the signals on the right screen, the doors on the left screen unl
 ## Pro-tips:
 * Use keyboard. The lives of your brothers in arms depend on you - if you will use a mouse, they might not all get back home.
 * You can always get back to the previous room. If there are too many enemies in the current room, you can run back and choose a safer route. However, you might run towards the enemies you have just escaped.
-* The alien organisms are fast** and always attack first. Do not try to escape and choose a better route too often, as you get a bit weaker every time.
+* The alien organisms are fast and always attack first. Do not try to escape and choose a better route too often, as you get a bit weaker every time.
 * Listen to the sounds of the signals' impulses. Sometimes it is easier to match the signals' frequencies by sound.
 
 ## Controls:
